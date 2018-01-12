@@ -21,10 +21,8 @@ import static org.hamcrest.Matchers.*;
  * Created by jamorham on 01/10/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-
-//@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3
-@Config(constants = BuildConfig.class, manifest = "../../../../../src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config for CI test hosts
-
+@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3
+//@Config(constants = BuildConfig.class, manifest = "../../../../../src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config for CI test hosts
 public class ProcessInitialDataQualityTest {
 
     // if we have a record which is on an exact millisecond boundary and test it and it passes the test
