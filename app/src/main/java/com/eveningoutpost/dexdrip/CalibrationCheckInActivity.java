@@ -2,20 +2,18 @@ package com.eveningoutpost.dexdrip;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.eveningoutpost.dexdrip.Models.UserError.Log;
-
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.eveningoutpost.dexdrip.ImportedLibraries.dexcom.SyncingService;
 import com.eveningoutpost.dexdrip.Models.Sensor;
+import com.eveningoutpost.dexdrip.Models.UserError.Log;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
 
 public class CalibrationCheckInActivity extends ActivityWithMenu {
     public static String menu_name = "Check in calibration";
-   Button button;
+    Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +45,5 @@ public class CalibrationCheckInActivity extends ActivityWithMenu {
                 }
             }
         });
-
     }
 }

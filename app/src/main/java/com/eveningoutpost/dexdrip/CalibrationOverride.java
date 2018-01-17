@@ -3,22 +3,18 @@ package com.eveningoutpost.dexdrip;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-
-import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.Models.Sensor;
-import com.eveningoutpost.dexdrip.Models.UserError.Log;
-
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.eveningoutpost.dexdrip.Models.Calibration;
+import com.eveningoutpost.dexdrip.Models.JoH;
+import com.eveningoutpost.dexdrip.Models.Sensor;
+import com.eveningoutpost.dexdrip.Models.UserError.Log;
+import com.eveningoutpost.dexdrip.UtilityModels.CalibrationSendQueue;
 import com.eveningoutpost.dexdrip.UtilityModels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.UtilityModels.UndoRedo;
-import com.eveningoutpost.dexdrip.UtilityModels.CalibrationSendQueue;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
-import com.eveningoutpost.dexdrip.wearintegration.WatchUpdaterService;
-import static com.eveningoutpost.dexdrip.Home.startWatchUpdaterService;
 
 
 public class CalibrationOverride extends ActivityWithMenu {
@@ -28,7 +24,7 @@ public class CalibrationOverride extends ActivityWithMenu {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(CollectionServiceStarter.isBTShare(getApplicationContext())) {
+        if (CollectionServiceStarter.isBTShare(getApplicationContext())) {
             Intent intent = new Intent(this, Home.class);
             startActivity(intent);
             finish();
@@ -43,7 +39,7 @@ public class CalibrationOverride extends ActivityWithMenu {
     }
 
     public void addListenerOnButton() {
-            button = (Button) findViewById(R.id.save_calibration_button);
+        button = (Button) findViewById(R.id.save_calibration_button);
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
