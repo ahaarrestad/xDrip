@@ -1,6 +1,5 @@
 package com.eveningoutpost.dexdrip;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -35,12 +34,7 @@ import lecho.lib.hellocharts.view.LineChartView;
 
 import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPluginFromPreferences;
 
-
 public class CalibrationGraph extends ActivityWithMenu {
-    //public static String menu_name = "Calibration Graph";
-    private LineChartView chart;
-    private LineChartData data;
-    private NavigationDrawerFragment mNavigationDrawerFragment;
     private final static String plugin_color = "#88CCFF00";
     private final boolean doMgdl = Pref.getString("units", "mgdl").equals("mgdl");
     private final boolean show_days_since = true; // could make this switchable if desired
@@ -55,8 +49,8 @@ public class CalibrationGraph extends ActivityWithMenu {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_graph);
         JoH.fixActionBar(this);
-        GraphHeader = (TextView) findViewById(R.id.CalibrationGraphHeader);
-        PluginHeader = (TextView) findViewById(R.id.calibrationPluginHeader);
+        GraphHeader = findViewById(R.id.CalibrationGraphHeader);
+        PluginHeader = findViewById(R.id.calibrationPluginHeader);
         PluginHeader.setText("");
     }
 
@@ -72,8 +66,8 @@ public class CalibrationGraph extends ActivityWithMenu {
     }
 
     public void setupCharts() {
-        chart = (LineChartView) findViewById(R.id.chart);
-        List<Line> lines = new ArrayList<Line>();
+        LineChartView chart = findViewById(R.id.chart);
+        List<Line> lines = new ArrayList<>();
 
         //calibration values
         List<Calibration> calibrations = Calibration.allForSensor();
@@ -91,7 +85,7 @@ public class CalibrationGraph extends ActivityWithMenu {
             GraphHeader.setText(Header);
 
             //red line
-            List<PointValue> lineValues = new ArrayList<PointValue>();
+            List<PointValue> lineValues = new ArrayList<>();
             final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
 
             lineValues.add(new PointValue((float) start_x, (conversion_factor * (float) (start_x * calibration.slope + calibration.intercept))));
@@ -107,7 +101,7 @@ public class CalibrationGraph extends ActivityWithMenu {
             if (plugin != null) {
                 final CalibrationAbstract.CalibrationData pcalibration = plugin.getCalibrationData();
 
-                final List<PointValue> plineValues = new ArrayList<PointValue>();
+                final List<PointValue> plineValues = new ArrayList<>();
 
                 plineValues.add(new PointValue((float) start_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(start_x, pcalibration)))));
                 plineValues.add(new PointValue((float) end_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(end_x, pcalibration)))));
@@ -122,12 +116,8 @@ public class CalibrationGraph extends ActivityWithMenu {
             }
 
             //add lines in order
-            for (Line greyLine : greyLines) {
-                lines.add(greyLine);
-            }
-            for (Line blueLine : blueLines) {
-                lines.add(blueLine);
-            }
+            lines.addAll(greyLines);
+            lines.addAll(blueLines);
 
         }
         Axis axisX = new Axis();
@@ -136,7 +126,7 @@ public class CalibrationGraph extends ActivityWithMenu {
         axisY.setName("Glucose " + (doMgdl ? "mg/dl" : "mmol/l"));
 
 
-        data = new LineChartData(lines);
+        LineChartData data = new LineChartData(lines);
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
         chart.setLineChartData(data);
@@ -150,9 +140,9 @@ public class CalibrationGraph extends ActivityWithMenu {
     @NonNull
     public List<Line> getCalibrationsLine(List<Calibration> calibrations, int color) {
         if (calibrations == null) return new ArrayList<>();
-        List<PointValue> values = new ArrayList<PointValue>();
-        List<PointValue> valuesb = new ArrayList<PointValue>();
-        List<PointValue> valuesc = new ArrayList<PointValue>();
+        List<PointValue> values = new ArrayList<>();
+        List<PointValue> valuesb = new ArrayList<>();
+        List<PointValue> valuesc = new ArrayList<>();
         for (Calibration calibration : calibrations) {
             if (calibration.estimate_raw_at_time_of_calibration > end_x) {
                 end_x = calibration.estimate_raw_at_time_of_calibration;
@@ -169,7 +159,7 @@ public class CalibrationGraph extends ActivityWithMenu {
                 time = (days_ago > 0) ? Integer.toString(days_ago) + "d  " : "";
                 time = time + (JoH.hourMinuteString(calibration.raw_timestamp));
             } else {
-                time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date((long) calibration.raw_timestamp));
+                time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(calibration.raw_timestamp));
             }
             point.setLabel(time);
             values.add(point);
@@ -215,7 +205,6 @@ public class CalibrationGraph extends ActivityWithMenu {
         return lines;
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -260,28 +249,20 @@ public class CalibrationGraph extends ActivityWithMenu {
                 .setTitle("Ovewrite Intercept")
                 .setMessage("Overwrite Intercept")
                 .setView(editText)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        String text = editText.getText().toString();
-                        if (!TextUtils.isEmpty(text)) {
-                            double doubleValue = JoH.tolerantParseDouble(text);
-                            Calibration calibration = Calibration.lastValid();
-                            calibration.intercept = doubleValue;
-                            calibration.save();
-                            CalibrationSendQueue.addToQueue(calibration, getApplicationContext());
-                            recreate();
-                        } else {
-                            JoH.static_toast_long("Input not found! Cancelled!");
-                        }
+                .setPositiveButton("OK", (dialog, which) -> {
+                    String text = editText.getText().toString();
+                    if (!TextUtils.isEmpty(text)) {
+                        double doubleValue = JoH.tolerantParseDouble(text);
+                        Calibration calibration = Calibration.lastValid();
+                        calibration.intercept = doubleValue;
+                        calibration.save();
+                        CalibrationSendQueue.addToQueue(calibration, getApplicationContext());
+                        recreate();
+                    } else {
+                        JoH.static_toast_long("Input not found! Cancelled!");
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        JoH.static_toast_long("Cancelled!");
-                    }
-                })
+                .setNegativeButton("Cancel", (dialog, which) -> JoH.static_toast_long("Cancelled!"))
                 .show();
     }
 
@@ -293,30 +274,20 @@ public class CalibrationGraph extends ActivityWithMenu {
                 .setTitle("Ovewrite Slope")
                 .setMessage("Overwrite Slope")
                 .setView(editText)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        String text = editText.getText().toString();
-                        if (!TextUtils.isEmpty(text)) {
-                            double doubleValue = JoH.tolerantParseDouble(text);
-                            Calibration calibration = Calibration.lastValid();
-                            calibration.slope = doubleValue;
-                            calibration.save();
-                            CalibrationSendQueue.addToQueue(calibration, getApplicationContext());
-                            recreate();
-                        } else {
-                            JoH.static_toast_long("Input not found! Cancelled!");
-                        }
+                .setPositiveButton("OK", (dialog, which) -> {
+                    String text = editText.getText().toString();
+                    if (!TextUtils.isEmpty(text)) {
+                        double doubleValue = JoH.tolerantParseDouble(text);
+                        Calibration calibration = Calibration.lastValid();
+                        calibration.slope = doubleValue;
+                        calibration.save();
+                        CalibrationSendQueue.addToQueue(calibration, getApplicationContext());
+                        recreate();
+                    } else {
+                        JoH.static_toast_long("Input not found! Cancelled!");
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        JoH.static_toast_long("Cancelled!");
-                    }
-                })
+                .setNegativeButton("Cancel", (dialog, which) -> JoH.static_toast_long("Cancelled!"))
                 .show();
     }
-
-
 }
