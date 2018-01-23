@@ -2,7 +2,6 @@ package com.eveningoutpost.dexdrip.calibrations;
 
 import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.Models.UserError;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.google.gson.Gson;
@@ -144,7 +143,6 @@ public abstract class CalibrationAbstract {
         // algorithm can override to decide whether or not to be using age_adjusted_raw
         return bgReading.ageAdjustedFiltered_fast() * data.slope + data.intercept;
     }
-
 
 
     protected static CalibrationData jsonStringToData(String json) {

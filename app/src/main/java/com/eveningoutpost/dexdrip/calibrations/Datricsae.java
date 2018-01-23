@@ -2,7 +2,6 @@ package com.eveningoutpost.dexdrip.calibrations;
 
 import android.util.Log;
 
-import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.Calibration;
 import com.eveningoutpost.dexdrip.Models.Forecast;
 import com.eveningoutpost.dexdrip.Models.Forecast.PolyTrendLine;
@@ -167,7 +166,7 @@ public class Datricsae extends CalibrationAbstract {
                 saveDataToCache(TAG, cd, until, highest_calibration_timestamp); // Save cached data
             }
         } else {
-           if (d) Log.d(TAG, "Returning cached calibration data object");
+            if (d) Log.d(TAG, "Returning cached calibration data object");
         }
 
         return cd; // null if invalid

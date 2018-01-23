@@ -1,11 +1,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
 
         <variable
             name="prefs"
             type="com.eveningoutpost.dexdrip.UtilityModels.PrefsView" />
-        <import type="android.view.View"/>
+
+        <import type="android.view.View" />
     </data>
 
     <android.support.v4.widget.DrawerLayout
@@ -52,8 +54,8 @@
                         android:hint="@string/enter_second_bg_value"
                         android:inputType="numberDecimal"
                         android:textAlignment="center"
-                        android:visibility="@{prefs.getbool(`use_double_calibrations`) ? View.VISIBLE : View.GONE}"
-                        android:textSize="24sp" />
+                        android:textSize="24sp"
+                        android:visibility="@{prefs.getbool(`use_double_calibrations`) ? View.VISIBLE : View.GONE}" />
 
                     <TextView
                         android:layout_width="wrap_content"
