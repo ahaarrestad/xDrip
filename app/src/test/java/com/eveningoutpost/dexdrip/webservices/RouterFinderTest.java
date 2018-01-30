@@ -15,6 +15,8 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 /**
+ * Tests for {@link RouteFinder}
+ *
  * Created by jamorham on 17/01/2018.
  */
 @RunWith(RobolectricTestRunner.class)

@@ -14,11 +14,12 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 
 /**
+ * Test for initial data quality
+ * <p>
  * Created by jamorham on 01/10/2017.
  */
 @RunWith(RobolectricTestRunner.class)
@@ -46,15 +47,9 @@ public class ProcessInitialDataQualityTest {
     public void testGetInitialDataQuality() throws Exception {
 
         // check we can mock ActiveAndroid which depends on Android framework
-        MockModel m = null;
-        try {
-            m = new MockModel();
-        } catch (NullPointerException e) {
-            log(e.toString());
-            assertThat("Cannot create MockModel internal error - check ActiveAndroid dependency is included and manifest models and that correct @Config line is being used!", false, is(true));
-        }
-        assertThat("ActiveAndroid Mock Model can be created", m != null, is(true));
-        assertThat("ActiveAndroid Mock Model can be created", m.intField == 0, is(true));
+        MockModel m = new MockModel();
+        assertWithMessage("ActiveAndroid Mock Model can be created").that(m).isNotNull();
+        assertWithMessage("ActiveAndroid Mock Model has been created").that(m.intField).isEqualTo(0);
 
         // result object store
         ProcessInitialDataQuality.InitialDataQuality test;
@@ -62,14 +57,14 @@ public class ProcessInitialDataQualityTest {
         // try with null data set
         test = ProcessInitialDataQuality.getInitialDataQuality(null);
 
-        assertThat("Result object not null", test != null, is(true));
-        assertThat("Null input should fail", test.pass, is(false));
+        assertWithMessage("Result object not null").that(test).isNotNull();
+        assertWithMessage("Null input should fail").that(test.pass).isFalse();
 
         // try with empty data set
         List<BgReading> bgReadingList = new ArrayList<>();
         test = ProcessInitialDataQuality.getInitialDataQuality(bgReadingList);
-        assertThat("Result object not null", test != null, is(true));
-        assertThat("Empty input should fail", test.pass, is(false));
+        assertWithMessage("Result object not null").that(test).isNotNull();
+        assertWithMessage("Empty input should fail").that(test.pass).isFalse();
 
         // create an assortment of data sets with data spaced out by different frequencies
         for (int frequency = 5; frequency < 21; frequency = frequency + 1) {
@@ -83,21 +78,22 @@ public class ProcessInitialDataQualityTest {
                         + " Oldest age: " + JoH.niceTimeScalar(JoH.msSince(bgReadingList.get(bgReadingList.size() - 1).timestamp))
                         + " / Mock Advice: " + test.advice + " VERDICT: " + (test.pass ? "PASS" : "NOT PASSED"));
 
-                assertThat("Result object not null", test != null, is(true));
-                if (i < 3) assertThat("Empty input should fail", test.pass, is(false));
-                assertThat("There should be some advice on loop " + i, test.advice.length() > 0, is(true));
+                assertWithMessage("Result object not null").that(test).isNotNull();
+                if (i < 3) {
+                    assertWithMessage("Empty input should fail").that(test.pass).isFalse();
+                }
+                assertWithMessage("There should be some advice on loop " + i).that(test.advice).isNotEmpty();
 
                 final long ms_since = (JoH.msSince(bgReadingList.get(bgReadingList.size() - 1).timestamp));
                 if ((ms_since > Constants.STALE_CALIBRATION_CUT_OFF + COMPUTATION_GRACE_TIME) || (i < 3)) {
-                    assertThat("Stale data should fail: i:" + i + " tm:" + ms_since, test.pass, is(false));
+                    assertWithMessage("Stale data should fail: i:" + i + " tm:" + ms_since).that(test.pass).isFalse();
                 }
                 if ((ms_since <= Constants.STALE_CALIBRATION_CUT_OFF) && (bgReadingList.size() >= 3)) {
-                    assertThat("Good data should pass", test.pass, is(true));
+                    assertWithMessage("Good data should pass").that(test.pass).isTrue();
                 }
 
             }
         }
-
     }
 
     // Timestamps from this will not be realistic, this could become an issue if other filtering
