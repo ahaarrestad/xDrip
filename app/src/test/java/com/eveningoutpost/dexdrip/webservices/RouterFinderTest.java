@@ -2,6 +2,7 @@ package com.eveningoutpost.dexdrip.webservices;
 
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
+import com.eveningoutpost.dexdrip.TestingApplication;
 import com.eveningoutpost.dexdrip.xdrip;
 
 import org.junit.Before;
@@ -16,13 +17,11 @@ import static com.google.common.truth.Truth.assertWithMessage;
 /**
  * Created by jamorham on 17/01/2018.
  */
-
 @RunWith(RobolectricTestRunner.class)
-
-//@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3 or set Android JUnit default working directory to $MODULE_DIR$
-@Config(constants = BuildConfig.class, manifest = "../../../../../src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml")
-// use this config for CI test hosts
-
+@Config(
+        constants = BuildConfig.class,
+        application = TestingApplication.class
+)
 public class RouterFinderTest {
 
     private static void log(String msg) {

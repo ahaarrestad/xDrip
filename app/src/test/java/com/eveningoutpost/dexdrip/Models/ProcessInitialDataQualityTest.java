@@ -2,6 +2,7 @@ package com.eveningoutpost.dexdrip.Models;
 
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.MockModel;
+import com.eveningoutpost.dexdrip.TestingApplication;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 
 import org.junit.Before;
@@ -13,18 +14,18 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 
 /**
  * Created by jamorham on 01/10/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-
-//@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3
-@Config(constants = BuildConfig.class, manifest = "../../../../../src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config for CI test hosts
-
+@Config(
+        constants = BuildConfig.class,
+        application = TestingApplication.class
+)
 public class ProcessInitialDataQualityTest {
 
     // if we have a record which is on an exact millisecond boundary and test it and it passes the test
