@@ -272,10 +272,3 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
-
-test {
-    testLogging {
-        events "failed"
-        exeptionFormat "full"
-    }
-}
