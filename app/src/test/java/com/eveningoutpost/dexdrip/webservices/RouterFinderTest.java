@@ -20,10 +20,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
  * Created by jamorham on 17/01/2018.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(
-        constants = BuildConfig.class,
-        application = TestingApplication.class
-)
 public class RouterFinderTest {
 
     private static void log(String msg) {

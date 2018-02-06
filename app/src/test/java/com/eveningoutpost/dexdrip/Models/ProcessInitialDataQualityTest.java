@@ -1,15 +1,12 @@
 package com.eveningoutpost.dexdrip.Models;
 
-import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.MockModel;
-import com.eveningoutpost.dexdrip.TestingApplication;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +20,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
  * Created by jamorham on 01/10/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(
-        constants = BuildConfig.class,
-        application = TestingApplication.class
-)
 public class ProcessInitialDataQualityTest {
 
     // if we have a record which is on an exact millisecond boundary and test it and it passes the test
