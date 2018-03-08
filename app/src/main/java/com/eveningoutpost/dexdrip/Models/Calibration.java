@@ -270,7 +270,7 @@ public class Calibration extends Model {
         final List<BgReading> bgReadings = BgReading.latest_by_size(3);
 
         // don't allow initial calibration if data would be stale
-            if ((bgReadings == null) || (bgReadings.size() != 3) || !isDataSuitableForDoubleCalibration() ){
+        if ((bgReadings == null) || (bgReadings.size() != 3) || !isDataSuitableForDoubleCalibration()) {
             UserError.Log.wtf(TAG, "Did not find 3 readings for initial calibration - aborting");
             JoH.static_toast_long("Not enough recent sensor data! - cancelling!");
             return;
@@ -340,7 +340,7 @@ public class Calibration extends Model {
         lowBgReading.find_new_raw_curve();
 
         JoH.clearCache();
-        final List<Calibration> calibrations = new ArrayList<Calibration>();
+        final List<Calibration> calibrations = new ArrayList<>();
         calibrations.add(lowerCalibration);
         calibrations.add(higherCalibration);
 
@@ -471,7 +471,7 @@ public class Calibration extends Model {
 
     public static Calibration getByTimestamp(double timestamp) {//KS
         Sensor sensor = Sensor.currentSensor();
-        if(sensor == null) {
+        if (sensor == null) {
             return null;
         }
         return new Select()
@@ -524,7 +524,7 @@ public class Calibration extends Model {
                 bgReading = BgReading.last(is_follower);
             } else {
                 // get closest bg reading we can find with a cut off at 15 minutes max time
-                bgReading = BgReading.getForPreciseTimestamp(new Date().getTime() - ((timeoffset - estimatedInterstitialLagSeconds) * 1000 ), (15 * 60 * 1000));
+                bgReading = BgReading.getForPreciseTimestamp(new Date().getTime() - ((timeoffset - estimatedInterstitialLagSeconds) * 1000), (15 * 60 * 1000));
             }
             if (bgReading != null) {
                 if (SensorSanity.isRawValueSane(bgReading.raw_data, DexCollectionType.getDexCollectionType())) {
@@ -701,9 +701,9 @@ public class Calibration extends Model {
 
                 // sanity check result
                 if (Double.isInfinite(calibration.slope)
-                        ||(Double.isNaN(calibration.slope))
-                        ||(Double.isInfinite(calibration.intercept))
-                        ||(Double.isNaN(calibration.intercept))) {
+                        || (Double.isNaN(calibration.slope))
+                        || (Double.isInfinite(calibration.intercept))
+                        || (Double.isNaN(calibration.intercept))) {
                     calibration.sensor_confidence = 0;
                     calibration.slope_confidence = 0;
                     Home.toaststaticnext("Got invalid impossible slope calibration!");
@@ -933,10 +933,9 @@ public class Calibration extends Model {
             CalibrationSendQueue.addToQueue(calibration, xdrip.getAppContext());
             newFingerStickData();
         } else {
-            Log.d(TAG,"Could not find calibration to clear: "+uuid);
+            Log.d(TAG, "Could not find calibration to clear: " + uuid);
         }
     }
-
 
 
     public String toS() {
@@ -976,11 +975,11 @@ public class Calibration extends Model {
             }
         }
     }
-    
+
     public static void upsertFromMaster(Calibration jsonCalibration) {
-        
+
         if (jsonCalibration == null) {
-            Log.wtf(TAG,"Got null calibration from json");
+            Log.wtf(TAG, "Got null calibration from json");
             return;
         }
         try {
@@ -1022,14 +1021,14 @@ public class Calibration extends Model {
                 existingCalibration.second_intercept = jsonCalibration.second_intercept;
                 existingCalibration.first_scale = jsonCalibration.first_scale;
                 existingCalibration.second_scale = jsonCalibration.second_scale;
-                
+
                 existingCalibration.save();
             }
         } catch (Exception e) {
             Log.e(TAG, "Could not save Calibration: " + e.toString());
         }
     }
-    
+
 
     //COMMON SCOPES!
     public static Calibration last() {
@@ -1139,7 +1138,7 @@ public class Calibration extends Model {
     }
 
     public static List<Calibration> latestForGraph(int number, long startTime) {
-        return latestForGraph(number, startTime, (long)JoH.ts());
+        return latestForGraph(number, startTime, (long) JoH.ts());
     }
 
     public static List<Calibration> latestForGraph(int number, long startTime, long endTime) {
@@ -1217,11 +1216,11 @@ public class Calibration extends Model {
         return new Select()
                 .from(Calibration.class)
                 .where("sensor_uuid = ? ", sensor.uuid)
-                 .orderBy("timestamp desc")
-                 .limit(limit)
+                .orderBy("timestamp desc")
+                .limit(limit)
                 .execute();
     }
-    
+
     public static List<Calibration> futureCalibrations() {
         double timestamp = new Date().getTime();
         return new Select()
@@ -1233,26 +1232,18 @@ public class Calibration extends Model {
 
     public boolean isNote() {
         Calibration calibration = this;
-        if ((calibration.slope == 0)
+        return (calibration.slope == 0)
                 && (calibration.slope_confidence == note_only_marker)
                 && (calibration.sensor_confidence == 0)
-                && (calibration.intercept == 0)) {
-            return true;
-        } else {
-            return false;
-        }
+                && (calibration.intercept == 0);
     }
 
     public boolean isValid() {
         Calibration calibration = this;
-        if ((calibration.slope_confidence != 0)
+        return (calibration.slope_confidence != 0)
                 && (calibration.sensor_confidence != 0)
                 && (calibration.slope != 0)
-                && (calibration.intercept != 0)) {
-            return true;
-        } else {
-            return false;
-        }
+                && (calibration.intercept != 0);
     }
 
     public void invalidate() {

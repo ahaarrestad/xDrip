@@ -18,7 +18,6 @@ import java.util.List;
  * <p>
  * Created by Asbjorn Aarrestad on 7th January 2018.
  */
-
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ForecastTest {

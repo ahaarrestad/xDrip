@@ -169,29 +169,29 @@ public class BgReading extends Model implements ShareUploadableBg {
     @Column(name = "dg_delta_name")
     public String dg_delta_name;
 
-    public static void updateDB(){
+    public static void updateDB() {
         String[] updates = new String[]{"ALTER TABLE BgReadings ADD COLUMN dg_mgdl REAL;", "ALTER TABLE BgReadings ADD COLUMN dg_slope REAL;", "ALTER TABLE BgReadings ADD COLUMN dg_delta_name TEXT;"};
-        for (String patch:updates) {
+        for (String patch : updates) {
             try {
                 SQLiteUtils.execSql(patch);
-            } catch (Exception e){
+            } catch (Exception e) {
             }
         }
 
     }
 
-    public double getDg_mgdl(){
-        if(dg_mgdl != 0) return dg_mgdl;
+    public double getDg_mgdl() {
+        if (dg_mgdl != 0) return dg_mgdl;
         return calculated_value;
     }
 
-    public double getDg_slope(){
-        if(dg_mgdl != 0) return dg_slope;
+    public double getDg_slope() {
+        if (dg_mgdl != 0) return dg_slope;
         return currentSlope();
     }
 
-    public String getDg_deltaName(){
-        if(dg_mgdl != 0 && dg_delta_name != null) return dg_delta_name;
+    public String getDg_deltaName() {
+        if (dg_mgdl != 0 && dg_delta_name != null) return dg_delta_name;
         return slopeName();
     }
 
@@ -437,7 +437,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         }
 
         if (raw_data == 0) {
-            Log.e(TAG,"Warning: raw_data is 0 in BgReading.create()");
+            Log.e(TAG, "Warning: raw_data is 0 in BgReading.create()");
         }
 
         Calibration calibration = Calibration.lastValid();
@@ -643,7 +643,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         return slopeToArrowSymbol(this.calculated_value_slope * 60000);
     }
 
-    public  String slopeName() {
+    public String slopeName() {
         double slope_by_minute = calculated_value_slope * 60000;
         String arrow = "NONE";
         if (slope_by_minute <= (-3.5)) {
@@ -724,15 +724,17 @@ public class BgReading extends Model implements ShareUploadableBg {
     // Get a slope arrow based on pure guessed defaults so we can show it prior to calibration
     public static String getSlopeArrowSymbolBeforeCalibration() {
         final List<BgReading> last = BgReading.latestUnCalculated(2);
-        if ((last!=null) && (last.size()==2)) {
+        if ((last != null) && (last.size() == 2)) {
             final double guess_slope = 1; // This is the "Default" slope for Dex and LimiTTer
-            final double time_delta = (last.get(0).timestamp-last.get(1).timestamp);
-            if (time_delta<=(BgGraphBuilder.DEXCOM_PERIOD * 2)) {
+            final double time_delta = (last.get(0).timestamp - last.get(1).timestamp);
+            if (time_delta <= (BgGraphBuilder.DEXCOM_PERIOD * 2)) {
                 final double estimated_delta = (last.get(0).age_adjusted_raw_value * guess_slope) - (last.get(1).age_adjusted_raw_value * guess_slope);
                 final double estimated_delta2 = (last.get(0).raw_data * guess_slope) - (last.get(1).raw_data * guess_slope);
                 Log.d(TAG, "SlopeArrowBeforeCalibration: guess delta: " + estimated_delta + " delta2: " + estimated_delta2 + " timedelta: " + time_delta);
                 return slopeToArrowSymbol(estimated_delta / (time_delta / 60000));
-            } else { return ""; }
+            } else {
+                return "";
+            }
         } else {
             return "";
         }
@@ -747,8 +749,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         return reading != null && ((JoH.tsl() - reading.timestamp) < millis);
     }
 
-    public static BgReading last()
-    {
+    public static BgReading last() {
         return BgReading.last(Home.get_follower());
     }
 
@@ -834,7 +835,9 @@ public class BgReading extends Model implements ShareUploadableBg {
 
     public static List<BgReading> latestUnCalculated(int number) {
         Sensor sensor = Sensor.currentSensor();
-        if (sensor == null) { return null; }
+        if (sensor == null) {
+            return null;
+        }
         return new Select()
                 .from(BgReading.class)
                 .where("Sensor = ? ", sensor.getId())
@@ -866,7 +869,9 @@ public class BgReading extends Model implements ShareUploadableBg {
 
     public static List<BgReading> latestForGraphSensor(int number, long startTime, long endTime) {
         Sensor sensor = Sensor.currentSensor();
-        if (sensor == null) { return null; }
+        if (sensor == null) {
+            return null;
+        }
         return new Select()
                 .from(BgReading.class)
                 .where("Sensor = ? ", sensor.getId())
@@ -897,12 +902,12 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     public static BgReading readingNearTimeStamp(double startTime) {
-        final double margin = (4 * 60*1000);
+        final double margin = (4 * 60 * 1000);
         final DecimalFormat df = new DecimalFormat("#");
         df.setMaximumFractionDigits(1);
         return new Select()
                 .from(BgReading.class)
-                .where("timestamp >= " + df.format(startTime-margin))
+                .where("timestamp >= " + df.format(startTime - margin))
                 .where("timestamp <= " + df.format(startTime + margin))
                 .where("calculated_value != 0")
                 .where("raw_data != 0")
@@ -922,7 +927,9 @@ public class BgReading extends Model implements ShareUploadableBg {
 
     public static boolean isDataSuitableForDoubleCalibration() {
         final List<BgReading> uncalculated = BgReading.latestUnCalculated(3);
-        if (uncalculated.size() < 3) return false;
+        if (uncalculated.size() < 3) {
+            return false;
+        }
         return ProcessInitialDataQuality.getInitialDataQuality(uncalculated).pass || Pref.getBooleanDefaultFalse("bypass_calibration_quality_check");
     }
 
@@ -967,19 +974,18 @@ public class BgReading extends Model implements ShareUploadableBg {
         return estimate;
     }
 
-    public static void bgReadingInsertFromJson(String json)
-    {
+    public static void bgReadingInsertFromJson(String json) {
         bgReadingInsertFromJson(json, true);
     }
 
     private static void FixCalibration(BgReading bgr) {
-        if("".equals(bgr.calibration_uuid)) {
+        if ("".equals(bgr.calibration_uuid)) {
             Log.d(TAG, "Bgr with no calibration, doing nothing");
             return;
         }
         Calibration calibration = Calibration.byuuid(bgr.calibration_uuid);
-        if(calibration == null) {
-            Log.i(TAG, "recieved Unknown calibration," + bgr.calibration_uuid + " asking for sensor upate..." );
+        if (calibration == null) {
+            Log.i(TAG, "recieved Unknown calibration," + bgr.calibration_uuid + " asking for sensor upate...");
             GcmActivity.requestSensorCalibrationsUpdate();
         } else {
             bgr.calibration = calibration;
@@ -1019,7 +1025,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                 Log.d(TAG, "Could not save BGR: " + e.toString());
             }
         } else {
-            Log.e(TAG,"Got null bgr from json");
+            Log.e(TAG, "Got null bgr from json");
         }
     }
 
@@ -1039,14 +1045,14 @@ public class BgReading extends Model implements ShareUploadableBg {
 
             bgr.timestamp = timestamp;
             bgr.calculated_value = value;
-            
+
 
             // rough code for testing!
             bgr.filtered_calculated_value = value;
             bgr.raw_data = value;
             bgr.age_adjusted_raw_value = value;
             bgr.filtered_data = value;
-            
+
             final Sensor forced_sensor = Sensor.currentSensor();
             if (forced_sensor != null) {
                 bgr.sensor = forced_sensor;
@@ -1068,7 +1074,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                 Log.d(TAG, "Could not save BGR: " + e.toString());
             }
         } else {
-            Log.e(TAG,"Got null bgr from create");
+            Log.e(TAG, "Got null bgr from create");
         }
     }
 
@@ -1088,14 +1094,13 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     public static BgReading fromJSON(String json) {
-        if (json.length()==0)
-        {
-            Log.d(TAG,"Empty json received in bgreading fromJson");
+        if (json.length() == 0) {
+            Log.d(TAG, "Empty json received in bgreading fromJson");
             return null;
         }
         try {
             Log.d(TAG, "Processing incoming json: " + json);
-           return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json,BgReading.class);
+            return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, BgReading.class);
         } catch (Exception e) {
             Log.d(TAG, "Got exception parsing BgReading json: " + e.toString());
             Home.toaststaticnext("Error on BGReading sync, probably decryption key mismatch");
@@ -1137,6 +1142,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     private static final long CLOSEST_READING_MS = 290000;
+
     private static void processFromMessage(BgReadingMessage btm) {
         if ((btm != null) && (btm.uuid != null) && (btm.uuid.length() == 36)) {
             BgReading bg = byUUID(btm.uuid);
@@ -1198,7 +1204,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             jsonObject.put("raw_calculated", raw_calculated);
             jsonObject.put("raw_data", raw_data);
             jsonObject.put("calculated_value_slope", calculated_value_slope);
-            if(sendCalibration) {
+            if (sendCalibration) {
                 jsonObject.put("calibration_uuid", calibration_uuid);
             }
             //   jsonObject.put("sensor", sensor);
@@ -1231,7 +1237,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     public void find_slope() {
         List<BgReading> last_2 = BgReading.latest(2);
 
-        assert last_2.get(0)==this : "Invariant condition not fulfilled: calculating slope and current reading wasn't saved before";
+        assert last_2.get(0) == this : "Invariant condition not fulfilled: calculating slope and current reading wasn't saved before";
 
         if ((last_2 != null) && (last_2.size() == 2)) {
             calculated_value_slope = calculateSlope(this, last_2.get(1));
@@ -1260,46 +1266,46 @@ public class BgReading extends Model implements ShareUploadableBg {
             double y1 = third_latest.calculated_value;
             double x1 = third_latest.timestamp;
 
-            a = y1/((x1-x2)*(x1-x3))+y2/((x2-x1)*(x2-x3))+y3/((x3-x1)*(x3-x2));
-            b = (-y1*(x2+x3)/((x1-x2)*(x1-x3))-y2*(x1+x3)/((x2-x1)*(x2-x3))-y3*(x1+x2)/((x3-x1)*(x3-x2)));
-            c = (y1*x2*x3/((x1-x2)*(x1-x3))+y2*x1*x3/((x2-x1)*(x2-x3))+y3*x1*x2/((x3-x1)*(x3-x2)));
+            a = y1 / ((x1 - x2) * (x1 - x3)) + y2 / ((x2 - x1) * (x2 - x3)) + y3 / ((x3 - x1) * (x3 - x2));
+            b = (-y1 * (x2 + x3) / ((x1 - x2) * (x1 - x3)) - y2 * (x1 + x3) / ((x2 - x1) * (x2 - x3)) - y3 * (x1 + x2) / ((x3 - x1) * (x3 - x2)));
+            c = (y1 * x2 * x3 / ((x1 - x2) * (x1 - x3)) + y2 * x1 * x3 / ((x2 - x1) * (x2 - x3)) + y3 * x1 * x2 / ((x3 - x1) * (x3 - x2)));
 
-            Log.i(TAG, "find_new_curve: BG PARABOLIC RATES: "+a+"x^2 + "+b+"x + "+c);
+            Log.i(TAG, "find_new_curve: BG PARABOLIC RATES: " + a + "x^2 + " + b + "x + " + c);
 
             save();
         } else if ((last_3 != null) && (last_3.size() == 2)) {
 
             Log.i(TAG, "find_new_curve: Not enough data to calculate parabolic rates - assume Linear");
-                BgReading latest = last_3.get(0);
-                BgReading second_latest = last_3.get(1);
+            BgReading latest = last_3.get(0);
+            BgReading second_latest = last_3.get(1);
 
-                double y2 = latest.calculated_value;
-                double x2 = latest.timestamp;
-                double y1 = second_latest.calculated_value;
-                double x1 = second_latest.timestamp;
+            double y2 = latest.calculated_value;
+            double x2 = latest.timestamp;
+            double y1 = second_latest.calculated_value;
+            double x1 = second_latest.timestamp;
 
-                if(y1 == y2) {
-                    b = 0;
-                } else {
-                    b = (y2 - y1)/(x2 - x1);
-                }
-                a = 0;
-                c = -1 * ((latest.b * x1) - y1);
-
-            Log.i(TAG, ""+latest.a+"x^2 + "+latest.b+"x + "+latest.c);
-                save();
+            if (y1 == y2) {
+                b = 0;
             } else {
+                b = (y2 - y1) / (x2 - x1);
+            }
+            a = 0;
+            c = -1 * ((latest.b * x1) - y1);
+
+            Log.i(TAG, "" + latest.a + "x^2 + " + latest.b + "x + " + latest.c);
+            save();
+        } else {
             Log.i(TAG, "find_new_curve: Not enough data to calculate parabolic rates - assume static data");
             a = 0;
             b = 0;
             c = calculated_value;
 
-            Log.i(TAG, ""+a+"x^2 + "+b+"x + "+c);
+            Log.i(TAG, "" + a + "x^2 + " + b + "x + " + c);
             save();
         }
     }
 
-    public void calculateAgeAdjustedRawValue(){
+    public void calculateAgeAdjustedRawValue() {
         final double adjust_for = AGE_ADJUSTMENT_TIME - time_since_sensor_started;
         if ((adjust_for > 0) && (!DexCollectionType.hasLibre())) {
             age_adjusted_raw_value = ((AGE_ADJUSTMENT_FACTOR * (adjust_for / AGE_ADJUSTMENT_TIME)) * raw_data) + raw_data;
@@ -1325,11 +1331,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             double y1 = third_latest.age_adjusted_raw_value;
             double x1 = third_latest.timestamp;
 
-            ra = y1/((x1-x2)*(x1-x3))+y2/((x2-x1)*(x2-x3))+y3/((x3-x1)*(x3-x2));
-            rb = (-y1*(x2+x3)/((x1-x2)*(x1-x3))-y2*(x1+x3)/((x2-x1)*(x2-x3))-y3*(x1+x2)/((x3-x1)*(x3-x2)));
-            rc = (y1*x2*x3/((x1-x2)*(x1-x3))+y2*x1*x3/((x2-x1)*(x2-x3))+y3*x1*x2/((x3-x1)*(x3-x2)));
+            ra = y1 / ((x1 - x2) * (x1 - x3)) + y2 / ((x2 - x1) * (x2 - x3)) + y3 / ((x3 - x1) * (x3 - x2));
+            rb = (-y1 * (x2 + x3) / ((x1 - x2) * (x1 - x3)) - y2 * (x1 + x3) / ((x2 - x1) * (x2 - x3)) - y3 * (x1 + x2) / ((x3 - x1) * (x3 - x2)));
+            rc = (y1 * x2 * x3 / ((x1 - x2) * (x1 - x3)) + y2 * x1 * x3 / ((x2 - x1) * (x2 - x3)) + y3 * x1 * x2 / ((x3 - x1) * (x3 - x2)));
 
-            Log.i(TAG, "find_new_raw_curve: RAW PARABOLIC RATES: "+ra+"x^2 + "+rb+"x + "+rc);
+            Log.i(TAG, "find_new_raw_curve: RAW PARABOLIC RATES: " + ra + "x^2 + " + rb + "x + " + rc);
             save();
         } else if ((last_3 != null) && (last_3.size()) == 2) {
             BgReading latest = last_3.get(0);
@@ -1339,17 +1345,17 @@ public class BgReading extends Model implements ShareUploadableBg {
             double x2 = latest.timestamp;
             double y1 = second_latest.age_adjusted_raw_value;
             double x1 = second_latest.timestamp;
-            if(y1 == y2) {
+            if (y1 == y2) {
                 rb = 0;
             } else {
-                rb = (y2 - y1)/(x2 - x1);
+                rb = (y2 - y1) / (x2 - x1);
             }
             ra = 0;
             rc = -1 * ((latest.rb * x1) - y1);
 
             Log.i(TAG, "find_new_raw_curve: Not enough data to calculate parabolic rates - assume Linear data");
 
-            Log.i(TAG, "RAW PARABOLIC RATES: "+ra+"x^2 + "+rb+"x + "+rc);
+            Log.i(TAG, "RAW PARABOLIC RATES: " + ra + "x^2 + " + rb + "x + " + rc);
             save();
         } else {
             Log.i(TAG, "find_new_raw_curve: Not enough data to calculate parabolic rates - assume static data");
@@ -1365,8 +1371,9 @@ public class BgReading extends Model implements ShareUploadableBg {
             save();
         }
     }
+
     private static double weightedAverageRaw(double timeA, double timeB, double calibrationTime, double rawA, double rawB) {
-        final double relativeSlope = (rawB -  rawA)/(timeB - timeA);
+        final double relativeSlope = (rawB - rawA) / (timeB - timeA);
         final double relativeIntercept = rawA - (relativeSlope * timeA);
         return ((relativeSlope * calibrationTime) + relativeIntercept);
     }
@@ -1381,7 +1388,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     public int noiseValue() {
-        if(noise == null || noise.compareTo("") == 0) {
+        if (noise == null || noise.compareTo("") == 0) {
             return 1;
         } else {
             return Integer.valueOf(noise);
@@ -1416,7 +1423,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             return null;
         }
         // So, we have at least three values...
-        for(BgReading bgReading : latest) {
+        for (BgReading bgReading : latest) {
             Log.d(TAG_ALERT, "getXRecentPoints - reading: time = " + bgReading.timestamp + " calculated_value " + bgReading.calculated_value);
         }
 
@@ -1438,7 +1445,7 @@ public class BgReading extends Model implements ShareUploadableBg {
 
 
         List<BgReading> last = BgReading.latest(1);
-        if ((last != null) && (last.size()>0)) {
+        if ((last != null) && (last.size() > 0)) {
 
             final long now = JoH.tsl();
             final long since = now - last.get(0).timestamp;
@@ -1486,10 +1493,9 @@ public class BgReading extends Model implements ShareUploadableBg {
                     }
                 } else {
                     // not high - cancel any existing
-                    if (Pref.getLong(PERSISTENT_HIGH_SINCE,0)!=0)
-                    {
-                        Log.i(TAG,"Cancelling previous persistent high as we are no longer high");
-                     Pref.setLong(PERSISTENT_HIGH_SINCE, 0); // clear it
+                    if (Pref.getLong(PERSISTENT_HIGH_SINCE, 0) != 0) {
+                        Log.i(TAG, "Cancelling previous persistent high as we are no longer high");
+                        Pref.setLong(PERSISTENT_HIGH_SINCE, 0); // clear it
                         Notifications.persistentHighAlert(xdrip.getAppContext(), false, ""); // cancel it
                     }
                 }
@@ -1501,10 +1507,10 @@ public class BgReading extends Model implements ShareUploadableBg {
     public static void checkForRisingAllert(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Boolean rising_alert = prefs.getBoolean("rising_alert", false);
-        if(!rising_alert) {
+        if (!rising_alert) {
             return;
         }
-        if(prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()){
+        if (prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()) {
             Log.i("NOTIFICATIONS", "checkForRisingAllert: Notifications are currently disabled!!");
             return;
         }
@@ -1512,12 +1518,9 @@ public class BgReading extends Model implements ShareUploadableBg {
         String riseRate = prefs.getString("rising_bg_val", "2");
         float friseRate = 2;
 
-        try
-        {
+        try {
             friseRate = Float.parseFloat(riseRate);
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
             Log.e(TAG_ALERT, "checkForRisingAllert reading falling_bg_val failed, continuing with 2", nfe);
         }
         Log.d(TAG_ALERT, "checkForRisingAllert will check for rate of " + friseRate);
@@ -1530,10 +1533,10 @@ public class BgReading extends Model implements ShareUploadableBg {
     public static void checkForDropAllert(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Boolean falling_alert = prefs.getBoolean("falling_alert", false);
-        if(!falling_alert) {
+        if (!falling_alert) {
             return;
         }
-        if(prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()){
+        if (prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()) {
             Log.d("NOTIFICATIONS", "checkForDropAllert: Notifications are currently disabled!!");
             return;
         }
@@ -1541,12 +1544,9 @@ public class BgReading extends Model implements ShareUploadableBg {
         String dropRate = prefs.getString("falling_bg_val", "2");
         float fdropRate = 2;
 
-        try
-        {
+        try {
             fdropRate = Float.parseFloat(dropRate);
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
             Log.e(TAG_ALERT, "reading falling_bg_val failed, continuing with 2", nfe);
         }
         Log.i(TAG_ALERT, "checkForDropAllert will check for rate of " + fdropRate);
@@ -1559,7 +1559,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     private static boolean checkForDropRiseAllert(float MaxSpeed, boolean drop) {
         Log.d(TAG_ALERT, "checkForDropRiseAllert called drop=" + drop);
         List<BgReading> latest = getXRecentPoints(4);
-        if(latest == null) {
+        if (latest == null) {
             Log.d(TAG_ALERT, "checkForDropRiseAllert we don't have enough points from the last 15 minutes, returning false");
             return false;
         }
@@ -1569,7 +1569,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             bg_diff3 *= (-1);
         }
         Log.i(TAG_ALERT, "bg_diff3=" + bg_diff3 + " time3 = " + time3);
-        if(bg_diff3 < time3 * MaxSpeed) {
+        if (bg_diff3 < time3 * MaxSpeed) {
             Log.d(TAG_ALERT, "checkForDropRiseAllert for latest 4 points not fast enough, returning false");
             return false;
         }
@@ -1582,11 +1582,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             bg_diff1 *= (-1);
         }
 
-        if(time1 > 7.0) {
+        if (time1 > 7.0) {
             Log.d(TAG_ALERT, "checkForDropRiseAllert the two points are not close enough, returning true");
             return true;
         }
-        if(bg_diff1 < time1 * MaxSpeed /2) {
+        if (bg_diff1 < time1 * MaxSpeed / 2) {
             Log.d(TAG_ALERT, "checkForDropRiseAllert for latest 2 points not fast enough, returning false");
             return false;
         }
@@ -1597,12 +1597,12 @@ public class BgReading extends Model implements ShareUploadableBg {
     // Make sure that this function either sets the alert or removes it.
     public static boolean getAndRaiseUnclearReading(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        if(prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()){
+        if (prefs.getLong("alerts_disabled_until", 0) > new Date().getTime()) {
             Log.d("NOTIFICATIONS", "getAndRaiseUnclearReading Notifications are currently disabled!!");
             UserNotification.DeleteNotificationByType("bg_unclear_readings_alert");
             return false;
         }
-        
+
         Boolean bg_unclear_readings_alerts = prefs.getBoolean("bg_unclear_readings_alerts", false);
         if (!bg_unclear_readings_alerts || (!DexCollectionType.hasFiltered())) {
             Log.d(TAG_ALERT, "getUnclearReading returned false since feature is disabled");
@@ -1613,19 +1613,19 @@ public class BgReading extends Model implements ShareUploadableBg {
 
         Long UnclearTime = BgReading.getUnclearTime(UnclearTimeSetting);
 
-        if (UnclearTime >= UnclearTimeSetting ) {
+        if (UnclearTime >= UnclearTimeSetting) {
             Log.d("NOTIFICATIONS", "Readings have been unclear for too long!!");
             Notifications.bgUnclearAlert(context);
             return true;
         }
-        
+
         UserNotification.DeleteNotificationByType("bg_unclear_readings_alert");
-        
-        if (UnclearTime > 0 ) {
+
+        if (UnclearTime > 0) {
             Log.d(TAG_ALERT, "We are in an clear state, but not for too long. Alerts are disabled");
             return true;
         }
-        
+
         return false;
     }
     /*
@@ -1642,22 +1642,22 @@ public class BgReading extends Model implements ShareUploadableBg {
         Log.d(TAG_ALERT, "trendingToAlertEnd called");
 
         List<BgReading> latest = getXRecentPoints(3);
-        if(latest == null) {
+        if (latest == null) {
             Log.d(TAG_ALERT, "trendingToAlertEnd we don't have enough points from the last 15 minutes, returning false");
             return false;
         }
 
-        if(above == false) {
+        if (above == false) {
             // This is a low alert, we should be going up
-            if((latest.get(0).calculated_value - latest.get(1).calculated_value > 4) ||
-               (latest.get(0).calculated_value - latest.get(2).calculated_value > 10)) {
+            if ((latest.get(0).calculated_value - latest.get(1).calculated_value > 4) ||
+                    (latest.get(0).calculated_value - latest.get(2).calculated_value > 10)) {
                 Log.d(TAG_ALERT, "trendingToAlertEnd returning true for low alert");
                 return true;
             }
         } else {
             // This is a high alert we should be heading down
-            if((latest.get(1).calculated_value - latest.get(0).calculated_value > 4) ||
-               (latest.get(2).calculated_value - latest.get(0).calculated_value > 10)) {
+            if ((latest.get(1).calculated_value - latest.get(0).calculated_value > 4) ||
+                    (latest.get(2).calculated_value - latest.get(0).calculated_value > 10)) {
                 Log.d(TAG_ALERT, "trendingToAlertEnd returning true for high alert");
                 return true;
             }
@@ -1685,6 +1685,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     // The extra 120,000 is to allow the packet to be delayed for some time and still be counted in that group
     // Please don't use for MAX_INFLUANCE a number that is complete multiply of 5 minutes (300,000)
     static final int MAX_INFLUANCE = 30 * 60000 - 120000; // A bad point means data is untrusted for 30 minutes.
+
     private static Long getUnclearTimeHelper(List<BgReading> latest, Long interstingTime, final Long now) {
 
         // The code ignores missing points (that is they some times are treated as good and some times as bad.
@@ -1693,13 +1694,13 @@ public class BgReading extends Model implements ShareUploadableBg {
         Long LastGoodTime = 0l; // 0 represents that we are not in a good part
 
         Long UnclearTime = 0l;
-        for(BgReading bgReading : latest) {
+        for (BgReading bgReading : latest) {
             // going over the readings from latest to first
-            if(bgReading.timestamp < now - (interstingTime + MAX_INFLUANCE)) {
+            if (bgReading.timestamp < now - (interstingTime + MAX_INFLUANCE)) {
                 // Some readings are missing, we can stop checking
                 break;
             }
-            if(bgReading.timestamp <= now - MAX_INFLUANCE  && UnclearTime == 0) {
+            if (bgReading.timestamp <= now - MAX_INFLUANCE && UnclearTime == 0) {
                 Log.d(TAG_ALERT, "We did not have a problematic reading for MAX_INFLUANCE time, so now all is well");
                 return 0l;
 
@@ -1712,23 +1713,23 @@ public class BgReading extends Model implements ShareUploadableBg {
                 LastGoodTime = 0l;
             } else {
                 if (LastGoodTime == 0l) {
-                    Log.d(TAG_ALERT, "We are starting a good period at "+ bgReading.timestamp);
+                    Log.d(TAG_ALERT, "We are starting a good period at " + bgReading.timestamp);
                     LastGoodTime = bgReading.timestamp;
                 } else {
                     // we have some good period, is it good enough?
-                    if(LastGoodTime - bgReading.timestamp >= MAX_INFLUANCE) {
+                    if (LastGoodTime - bgReading.timestamp >= MAX_INFLUANCE) {
                         // Here UnclearTime should be already set, otherwise we will return a toob big value
-                        if (UnclearTime ==0) {
+                        if (UnclearTime == 0) {
                             Log.wtf(TAG_ALERT, "ERROR - UnclearTime must not be 0 here !!!");
                         }
-                        Log.d(TAG_ALERT, "We have a good period from " + bgReading.timestamp + " to " + LastGoodTime + "returning " + (now - UnclearTime +5 *60000));
-                        return now - UnclearTime + 5 *60000;
+                        Log.d(TAG_ALERT, "We have a good period from " + bgReading.timestamp + " to " + LastGoodTime + "returning " + (now - UnclearTime + 5 * 60000));
+                        return now - UnclearTime + 5 * 60000;
                     }
                 }
             }
         }
         // if we are here, we have a problem... or not.
-        if(UnclearTime == 0l) {
+        if (UnclearTime == 0l) {
             Log.d(TAG_ALERT, "Since we did not find a good period, but we also did not find a single bad value, we assume things are good");
             return 0l;
         }
@@ -1741,7 +1742,7 @@ public class BgReading extends Model implements ShareUploadableBg {
 
     // This is to enable testing of the function, by passing different values
     public static Long getUnclearTime(Long interstingTime) {
-        List<BgReading> latest = BgReading.latest((interstingTime.intValue() + MAX_INFLUANCE)/ 60000 /5 );
+        List<BgReading> latest = BgReading.latest((interstingTime.intValue() + MAX_INFLUANCE) / 60000 / 5);
         if (latest == null) {
             return 0L;
         }
@@ -1766,13 +1767,13 @@ public class BgReading extends Model implements ShareUploadableBg {
         return age_adjusted_raw_value;
     }
 
-    public double ageAdjustedFiltered(){
+    public double ageAdjustedFiltered() {
         double usedRaw = usedRaw();
-        if(usedRaw == raw_data || raw_data == 0d){
+        if (usedRaw == raw_data || raw_data == 0d) {
             return filtered_data;
         } else {
             // adjust the filtered_data with the same factor as the age adjusted raw value
-            return filtered_data * (usedRaw/raw_data);
+            return filtered_data * (usedRaw / raw_data);
         }
     }
 
@@ -1785,14 +1786,14 @@ public class BgReading extends Model implements ShareUploadableBg {
     // the input of this function is a string. each char can be g(=good) or b(=bad) or s(=skip, point unmissed).
     static List<BgReading> createlatestTest(String input, Long now) {
         Random randomGenerator = new Random();
-        List<BgReading> out = new LinkedList<BgReading> ();
-        char[] chars=  input.toCharArray();
-        for(int i=0; i < chars.length; i++) {
+        List<BgReading> out = new LinkedList<BgReading>();
+        char[] chars = input.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
             BgReading bg = new BgReading();
             int rand = randomGenerator.nextInt(20000) - 10000;
             bg.timestamp = now - i * 5 * 60000 + rand;
             bg.raw_data = 150;
-            if(chars[i] == 'g') {
+            if (chars[i] == 'g') {
                 bg.filtered_data = 151;
             } else if (chars[i] == 'b') {
                 bg.filtered_data = 110;
@@ -1805,14 +1806,15 @@ public class BgReading extends Model implements ShareUploadableBg {
 
 
     }
+
     static void TestgetUnclearTime(String input, Long interstingTime, Long expectedResult) {
         final Long now = new Date().getTime();
         List<BgReading> readings = createlatestTest(input, now);
         Long result = getUnclearTimeHelper(readings, interstingTime * 60000, now);
-        if (result >= expectedResult * 60000 - 20000 && result <= expectedResult * 60000+20000) {
+        if (result >= expectedResult * 60000 - 20000 && result <= expectedResult * 60000 + 20000) {
             Log.d(TAG_ALERT, "Test passed");
         } else {
-            Log.d(TAG_ALERT, "Test failed expectedResult = " + expectedResult + " result = "+ result / 60000.0);
+            Log.d(TAG_ALERT, "Test failed expectedResult = " + expectedResult + " result = " + result / 60000.0);
         }
 
     }
@@ -1820,24 +1822,24 @@ public class BgReading extends Model implements ShareUploadableBg {
     public static void TestgetUnclearTimes() {
         TestgetUnclearTime("gggggggggggggggggggggggg", 90l, 0l * 5);
         TestgetUnclearTime("bggggggggggggggggggggggg", 90l, 1l * 5);
-        TestgetUnclearTime("bbgggggggggggggggggggggg", 90l, 2l *5 );
+        TestgetUnclearTime("bbgggggggggggggggggggggg", 90l, 2l * 5);
         TestgetUnclearTime("gbgggggggggggggggggggggg", 90l, 2l * 5);
         TestgetUnclearTime("gbgggbggbggbggbggbggbgbg", 90l, 18l * 5);
         TestgetUnclearTime("bbbgggggggbbgggggggggggg", 90l, 3l * 5);
         TestgetUnclearTime("ggggggbbbbbbgggggggggggg", 90l, 0l * 5);
         TestgetUnclearTime("ggssgggggggggggggggggggg", 90l, 0l * 5);
         TestgetUnclearTime("ggssbggssggggggggggggggg", 90l, 5l * 5);
-        TestgetUnclearTime("bb",                       90l, 18l * 5);
+        TestgetUnclearTime("bb", 90l, 18l * 5);
 
         // intersting time is 2 minutes, we should always get 0 (in 5 minutes units
-        TestgetUnclearTime("gggggggggggggggggggggggg", 2l, 0l  * 5);
+        TestgetUnclearTime("gggggggggggggggggggggggg", 2l, 0l * 5);
         TestgetUnclearTime("bggggggggggggggggggggggg", 2l, 2l);
         TestgetUnclearTime("bbgggggggggggggggggggggg", 2l, 2l);
         TestgetUnclearTime("gbgggggggggggggggggggggg", 2l, 2l);
         TestgetUnclearTime("gbgggbggbggbggbggbggbgbg", 2l, 2l);
 
         // intersting time is 10 minutes, we should always get 0 (in 5 minutes units
-        TestgetUnclearTime("gggggggggggggggggggggggg", 10l, 0l  * 5);
+        TestgetUnclearTime("gggggggggggggggggggggggg", 10l, 0l * 5);
         TestgetUnclearTime("bggggggggggggggggggggggg", 10l, 1l * 5);
         TestgetUnclearTime("bbgggggggggggggggggggggg", 10l, 2l * 5);
         TestgetUnclearTime("gbgggggggggggggggggggggg", 10l, 2l * 5);
@@ -1846,13 +1848,13 @@ public class BgReading extends Model implements ShareUploadableBg {
         TestgetUnclearTime("ggggggbbbbbbgggggggggggg", 10l, 0l * 5);
         TestgetUnclearTime("ggssgggggggggggggggggggg", 10l, 0l * 5);
         TestgetUnclearTime("ggssbggssggggggggggggggg", 10l, 2l * 5);
-        TestgetUnclearTime("bb",                       10l, 2l * 5);
+        TestgetUnclearTime("bb", 10l, 2l * 5);
     }
 
     public int getSlopeOrdinal() {
         double slope_by_minute = calculated_value_slope * 60000;
         int ordinal = 0;
-        if(!hide_slope) {
+        if (!hide_slope) {
             if (slope_by_minute <= (-3.5)) {
                 ordinal = 7;
             } else if (slope_by_minute <= (-2)) {

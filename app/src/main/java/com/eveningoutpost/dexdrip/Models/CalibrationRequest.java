@@ -45,9 +45,9 @@ public class CalibrationRequest extends Model {
     }
 
     static void clearAll(){
-        List<CalibrationRequest> calibrationRequests =  new Select()
-                                                            .from(CalibrationRequest.class)
-                                                            .execute();
+        List<CalibrationRequest> calibrationRequests = new Select()
+                                                           .from(CalibrationRequest.class)
+                                                           .execute();
         if (calibrationRequests.size() >=1) {
             for (CalibrationRequest calibrationRequest : calibrationRequests) {
                 calibrationRequest.delete();
