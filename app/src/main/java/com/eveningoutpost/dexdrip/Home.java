@@ -84,6 +84,7 @@ import com.eveningoutpost.dexdrip.UtilityModels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.UtilityModels.CompatibleApps;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.Experience;
+import com.eveningoutpost.dexdrip.UtilityModels.Inevitable;
 import com.eveningoutpost.dexdrip.UtilityModels.Intents;
 import com.eveningoutpost.dexdrip.UtilityModels.JamorhamShowcaseDrawer;
 import com.eveningoutpost.dexdrip.UtilityModels.NightscoutUploader;
@@ -1769,6 +1770,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public static void staticRefreshBGCharts() {
         staticRefreshBGCharts(false);
     }
+    public static void staticRefreshBGChartsOnIdle() {
+        Inevitable.task("refresh-home-charts", 1000, () -> staticRefreshBGCharts(false));
+    }
+
 
     public static void staticRefreshBGCharts(boolean override) {
         reset_viewport = true;
@@ -1922,6 +1927,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         //Transmitter Battery Level
         final Sensor sensor = Sensor.currentSensor();
+        
+        //????????? what about tomato here ?????
         if (sensor != null && sensor.latest_battery_level != 0 && !DexCollectionService.getBestLimitterHardwareName().equalsIgnoreCase("BlueReader") && sensor.latest_battery_level <= Dex_Constants.TRANSMITTER_BATTERY_LOW && !Pref.getBoolean("disable_battery_warning", false)) {
             Drawable background = new Drawable() {
 
