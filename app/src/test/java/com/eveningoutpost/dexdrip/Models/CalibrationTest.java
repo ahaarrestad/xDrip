@@ -18,7 +18,7 @@ import static com.google.common.truth.Truth.assertThat;
 /**
  * Various tests for {@link Calibration} class
  *
- * @author asbjorn aarrestad - asbjorn@aarrestad.com on 01.03.2018.
+ * @author asbjorn aarrestad - asbjorn@aarrestad.com 2018.03.
  */
 @RunWith(RobolectricTestRunner.class)
 //@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3 or set Android JUnit default working directory to $MODULE_DIR$
@@ -54,14 +54,16 @@ public class CalibrationTest {
         Calibration calibration1 = calibrations.get(0);
         assertThat(calibration1.bg).isWithin(0.01).of(145);
         assertThat(calibration1.raw_value).isWithin(0.01).of(135);
+        assertThat(calibration1.slope).isEqualTo(1);
 
         Calibration calibration2 = calibrations.get(1);
         assertThat(calibration2.bg).isWithin(0.01).of(140);
         assertThat(calibration2.raw_value).isWithin(0.01).of(130);
+        assertThat(calibration2.slope).isEqualTo(1);
     }
 
     @Test
-    public void initialCalibration_sinkingBg_OK() {
+    public void initialCalibration_fallingBg_OK() {
         // :: Setup
         // Add mock sensor
         Sensor mockSensor = new Sensor();
