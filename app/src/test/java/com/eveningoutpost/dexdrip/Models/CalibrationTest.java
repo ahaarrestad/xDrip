@@ -21,7 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
  * @author asbjorn aarrestad - asbjorn@aarrestad.com 2018.03.
  */
 @RunWith(RobolectricTestRunner.class)
-//@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml") // use this config inside android studio 3 or set Android JUnit default working directory to $MODULE_DIR$
+//@Config(constants = BuildConfig.class, manifest = "../../../../app/src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml")
+// use this config inside android studio 3 or set Android JUnit default working directory to $MODULE_DIR$
 @Config(constants = BuildConfig.class, manifest = "../../../../../src/test/java/com/eveningoutpost/dexdrip/TestingManifest.xml")
 // use this config for CI test hosts
 public class CalibrationTest {
@@ -54,12 +55,12 @@ public class CalibrationTest {
         Calibration calibration1 = calibrations.get(0);
         assertThat(calibration1.bg).isWithin(0.01).of(145);
         assertThat(calibration1.raw_value).isWithin(0.01).of(135);
-        assertThat(calibration1.slope).isEqualTo(1);
+        assertThat(calibration1.slope).isWithin(0.001).of(1);
 
         Calibration calibration2 = calibrations.get(1);
         assertThat(calibration2.bg).isWithin(0.01).of(140);
         assertThat(calibration2.raw_value).isWithin(0.01).of(130);
-        assertThat(calibration2.slope).isEqualTo(1);
+        assertThat(calibration2.slope).isWithin(0.001).of(1);
     }
 
     @Test
@@ -85,10 +86,12 @@ public class CalibrationTest {
         Calibration calibration1 = calibrations.get(0);
         assertThat(calibration1.bg).isWithin(0.01).of(145);
         assertThat(calibration1.raw_value).isWithin(0.01).of(130);
+        assertThat(calibration1.slope).isWithin(0.001).of(1);
 
         Calibration calibration2 = calibrations.get(1);
         assertThat(calibration2.bg).isWithin(0.01).of(140);
         assertThat(calibration2.raw_value).isWithin(0.01).of(125);
+        assertThat(calibration2.slope).isWithin(0.001).of(1);
     }
 
     // ===== Internal Helpers ======================================================================
@@ -98,6 +101,7 @@ public class CalibrationTest {
         mockReading.raw_data = raw_data;
         mockReading.timestamp = System.currentTimeMillis() - (1000 * 60 * minutes);
         mockReading.sensor = sensor;
+        mockReading.age_adjusted_raw_value = raw_data + 0.1;
         mockReading.save();
     }
 }
