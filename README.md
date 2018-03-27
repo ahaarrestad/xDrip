@@ -5,7 +5,7 @@
  Info page and APK download: https://jamorham.github.io/#xdrip-plus
 
 <img align="right" src="https://travis-ci.org/jamorham/xDrip-plus.svg?branch=master">
-<a href='https://coveralls.io/github/ahaarrestad/xDrip?branch=master'>
+<br><a href='https://coveralls.io/github/ahaarrestad/xDrip?branch=master'>
  <img align="right" src='https://coveralls.io/repos/github/ahaarrestad/xDrip/badge.svg?branch=master' alt='Coverage Status' />
 </a>
 <img align="right" src="https://www.codacy.com/app/ahaarrestad/xDrip">
