@@ -8,8 +8,9 @@
 <br><a href='https://coveralls.io/github/ahaarrestad/xDrip?branch=master'>
  <img align="right" src='https://coveralls.io/repos/github/ahaarrestad/xDrip/badge.svg?branch=master' alt='Coverage Status' />
 </a>
-<img align="right" src="https://www.codacy.com/app/ahaarrestad/xDrip">
-## Features
+<br><a class="badge-align" href="https://www.codacy.com/app/ahaarrestad/xDrip?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ahaarrestad/xDrip&amp;utm_campaign=Badge_Grade">
+ <img align="right" src="https://api.codacy.com/project/badge/Grade/f295bf656b3049bfa6e597f9bc65aee1"/>
+</a>## Features
 * Voice, Keypad or Watch input of Treatments (Insulin/Carbs/Notes)
 * Visualization of Insulin and Carb action curves + Undo/Redo
 * Improved alerts and predictive low forecasting feature
