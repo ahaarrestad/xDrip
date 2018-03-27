@@ -1,4 +1,7 @@
 # Nightscout xDrip+
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b7b10796e4234861bf5940739b9e23d6)](https://app.codacy.com/app/ahaarrestad/xDrip?utm_source=github.com&utm_medium=referral&utm_content=ahaarrestad/xDrip&utm_campaign=badger)
+
 > Enhanced personal research version of xDrip
 
  <img align="right" src="Documentation/images/download-xdrip-plus-qr-code.png">
