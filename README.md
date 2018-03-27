@@ -5,7 +5,8 @@
  Info page and APK download: https://jamorham.github.io/#xdrip-plus
 
 <img align="right" src="https://travis-ci.org/jamorham/xDrip-plus.svg?branch=master">
-
+<img align="right" src="https://coveralls.io/github/ahaarrestad/xDrip?branch=master">
+<img align="right" src="https://www.codacy.com/app/ahaarrestad/xDrip">
 ## Features
 * Voice, Keypad or Watch input of Treatments (Insulin/Carbs/Notes)
 * Visualization of Insulin and Carb action curves + Undo/Redo
