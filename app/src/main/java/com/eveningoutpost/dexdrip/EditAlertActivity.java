@@ -768,17 +768,9 @@ public class EditAlertActivity extends ActivityWithMenu {
     }
 
     public static boolean isPathRingtone(Context context, String path) {
-        if(path == null) {
-            return false;
-        }
-        if(path.length() == 0) {
-            return false;
-        }
-        Ringtone ringtone = RingtoneManager.getRingtone(context, Uri.parse(path));
-        if(ringtone == null) {
-            return false;
-        }
-        return true;
+        return path != null
+                && path.length() != 0
+                && RingtoneManager.getRingtone(context, Uri.parse(path)) != null;
     }
 
     public String shortPath(String path) {
