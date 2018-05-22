@@ -244,8 +244,10 @@ public class Ob1G5StateMachine {
                         } else {
                             UserError.Log.e(TAG, "authentication notification  throwable: (" + parent.getState() + ") " + throwable + " " + JoH.dateTimeText(JoH.tsl()));
                             parent.incrementErrors();
-                            if (throwable instanceof BleCannotSetCharacteristicNotificationException) {
+                            if (throwable instanceof BleCannotSetCharacteristicNotificationException
+                                    || throwable instanceof BleGattCharacteristicException) {
                                 parent.tryGattRefresh();
+                                parent.changeState(Ob1G5CollectionService.STATE.SCAN);
                             }
                         }
                         if ((throwable instanceof BleDisconnectedException) || (throwable instanceof TimeoutException)) {
@@ -563,13 +565,13 @@ public class Ob1G5StateMachine {
                                 UserError.Log.e(TAG, "Session start time reports: No session in progress");
                                 DexSessionKeeper.clearStart();
                             }
-                           /* if (Pref.getBooleanDefaultFalse("ob1_g5_preemptive_restart")) {
+                            if (Pref.getBooleanDefaultFalse("ob1_g5_preemptive_restart")) {
                                 if (txtime.getSessionDuration() > Constants.DAY_IN_MS * 6
                                         && txtime.getSessionDuration() < Constants.MONTH_IN_MS) {
                                     UserError.Log.uel(TAG, "Requesting preemptive session restart");
                                     restartSensorWithTimeTravel();
                                 }
-                            }*/
+                            }
                             break;
 
                         default:
@@ -836,21 +838,47 @@ public class Ob1G5StateMachine {
 
     public static void startSensor(long when) {
         if (acceptCommands()) {
-        if (msSince(when) > MAX_START_TIME_REWIND) {
-            when = JoH.tsl() - MAX_START_TIME_REWIND;
-            UserError.Log.e(TAG, "Cannot rewind sensor start time beyond: " + JoH.dateTimeText(when));
-        }
-            enqueueUniqueCommand(new SessionStartTxMessage(when,
-                            DexTimeKeeper.getDexTime(getTransmitterID(), when)),
-                    "Start Sensor");
+            if (msSince(when) > MAX_START_TIME_REWIND) {
+                when = JoH.tsl() - MAX_START_TIME_REWIND;
+                UserError.Log.e(TAG, "Cannot rewind sensor start time beyond: " + JoH.dateTimeText(when));
+            }
+            if (usingG6()) {
+                final String code = G6CalibrationParameters.getCurrentSensorCode();
+                if (code == null) {
+                    UserError.Log.wtf(TAG, "Cannot start G6 sensor as calibration code not set!");
+                } else {
+                    UserError.Log.ueh(TAG, "Starting G6 sensor using calibration code: " + code);
+                    enqueueUniqueCommand(new SessionStartTxMessage(when,
+                                    DexTimeKeeper.getDexTime(getTransmitterID(), when), code),
+                            "Start G6 Sensor");
+                }
+
+            } else {
+                UserError.Log.ueh(TAG, "Starting G5 sensor");
+                enqueueUniqueCommand(new SessionStartTxMessage(when,
+                                DexTimeKeeper.getDexTime(getTransmitterID(), when)),
+                        "Start G5 Sensor");
+            }
         }
     }
 
     private static void reprocessTxMessage(TransmitterMessage tm) {
         // rewrite session start messages in case our clock was wrong
         if (tm instanceof SessionStartTxMessage) {
-            final SessionStartTxMessage ssm = (SessionStartTxMessage)tm;
-            tm.byteSequence = new SessionStartTxMessage(ssm.getStartTime(), DexTimeKeeper.getDexTime(getTransmitterID(), ssm.getStartTime())).byteSequence;
+            final SessionStartTxMessage ssm = (SessionStartTxMessage) tm;
+            if (usingG6()) {
+                final String code = G6CalibrationParameters.getCurrentSensorCode();
+                if (code == null) {
+                    UserError.Log.wtf(TAG, "Cannot reprocess start G6 sensor as calibration code not set!");
+                } else {
+                    // g6
+                    tm.byteSequence = new SessionStartTxMessage(ssm.getStartTime(), DexTimeKeeper.getDexTime(getTransmitterID(), ssm.getStartTime()), code).byteSequence;
+                }
+            } else {
+                // g5
+                tm.byteSequence = new SessionStartTxMessage(ssm.getStartTime(), DexTimeKeeper.getDexTime(getTransmitterID(), ssm.getStartTime())).byteSequence;
+            }
+            UserError.Log.d(TAG, "New session start: " + ssm.getDexTime() + " for time: " + JoH.dateTimeText(ssm.getStartTime()));
         }
     }
 
@@ -1335,6 +1363,10 @@ public class Ob1G5StateMachine {
 
     private static int getTokenSize() {
         return 8;
+    }
+
+    public static boolean usingG6() {
+        return Pref.getBooleanDefaultFalse("using_g6");
     }
 
     private static class OperationSuccess extends RuntimeException {
