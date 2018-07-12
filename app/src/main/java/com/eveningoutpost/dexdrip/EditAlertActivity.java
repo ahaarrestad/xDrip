@@ -52,6 +52,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -139,36 +140,36 @@ public class EditAlertActivity extends ActivityWithMenu {
         mContext = this;
         setContentView(R.layout.activity_edit_alert);
 
-        viewHeader = (TextView) findViewById(R.id.view_alert_header);
+        viewHeader = findViewById(R.id.view_alert_header);
 
-        buttonSave = (Button)findViewById(R.id.edit_alert_save);
-        buttonRemove = (Button)findViewById(R.id.edit_alert_remove);
-        buttonTest = (Button)findViewById(R.id.edit_alert_test);
-        buttonalertMp3 = (Button)findViewById(R.id.Button_alert_mp3_file);
-        buttonPreSnooze = (Button)findViewById(R.id.edit_alert_pre_snooze);
-
-
-        alertText = (EditText) findViewById(R.id.edit_alert_text);
-        alertThreshold = (EditText) findViewById(R.id.edit_alert_threshold);
-        alertMp3File = (EditText) findViewById(R.id.edit_alert_mp3_file);
-
-        checkboxAllDay = (CheckBox) findViewById(R.id.check_alert_time);
-        checkboxVibrate = (CheckBox) findViewById(R.id.check_vibrate);
-        checkboxDisabled = (CheckBox) findViewById(R.id.view_alert_check_disable);
-
-        layoutTimeBetween = (LinearLayout) findViewById(R.id.time_between);
-        timeInstructions = (LinearLayout) findViewById(R.id.time_instructions);
-        timeInstructionsStart = (TextView) findViewById(R.id.time_instructions_start);
-        timeInstructionsEnd = (TextView) findViewById(R.id.time_instructions_end);
+        buttonSave = findViewById(R.id.edit_alert_save);
+        buttonRemove = findViewById(R.id.edit_alert_remove);
+        buttonTest = findViewById(R.id.edit_alert_test);
+        buttonalertMp3 = findViewById(R.id.Button_alert_mp3_file);
+        buttonPreSnooze = findViewById(R.id.edit_alert_pre_snooze);
 
 
-        viewTimeStart = (TextView) findViewById(R.id.view_alert_time_start);
-        viewTimeEnd = (TextView) findViewById(R.id.view_alert_time_end);
-        editSnooze = (EditText) findViewById(R.id.edit_snooze);
-        reraise = (EditText) findViewById(R.id.reraise);
+        alertText = findViewById(R.id.edit_alert_text);
+        alertThreshold = findViewById(R.id.edit_alert_threshold);
+        alertMp3File = findViewById(R.id.edit_alert_mp3_file);
 
-        viewAlertOverrideText = (TextView) findViewById(R.id.view_alert_override_silent);
-        checkboxAlertOverride = (CheckBox) findViewById(R.id.check_override_silent);
+        checkboxAllDay = findViewById(R.id.check_alert_time);
+        checkboxVibrate = findViewById(R.id.check_vibrate);
+        checkboxDisabled = findViewById(R.id.view_alert_check_disable);
+
+        layoutTimeBetween = findViewById(R.id.time_between);
+        timeInstructions = findViewById(R.id.time_instructions);
+        timeInstructionsStart = findViewById(R.id.time_instructions_start);
+        timeInstructionsEnd = findViewById(R.id.time_instructions_end);
+
+
+        viewTimeStart = findViewById(R.id.view_alert_time_start);
+        viewTimeEnd = findViewById(R.id.view_alert_time_end);
+        editSnooze = findViewById(R.id.edit_snooze);
+        reraise = findViewById(R.id.reraise);
+
+        viewAlertOverrideText = findViewById(R.id.view_alert_override_silent);
+        checkboxAlertOverride = findViewById(R.id.check_override_silent);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         addListenerOnButtons();
 
@@ -345,28 +346,29 @@ public class EditAlertActivity extends ActivityWithMenu {
             setTimeRanges();
         }
     }
-    
+
     void setDisabledView() {
-    	boolean disabled = checkboxDisabled.isChecked();
-    	
-    	ArrayList<TextView> textViews = new ArrayList<TextView>();
-    	textViews.add((TextView) findViewById(R.id.view_alert_text));
-    	textViews.add((TextView) findViewById(R.id.view_alert_threshold));
-    	textViews.add((TextView) findViewById(R.id.view_alert_default_snooze));
-    	textViews.add((TextView) findViewById(R.id.view_alert_mp3_file));
-    	textViews.add((TextView) findViewById(R.id.view_alert_time_between));
-    	textViews.add((TextView) findViewById(R.id.view_alert_disable));
-    	textViews.add((TextView) findViewById(R.id.view_alert_time));
-    	textViews.add((TextView) findViewById(R.id.view_alert_override_silent));
-    	textViews.add((TextView) findViewById(R.id.view_alert_vibrate));
-    	
-    	for (TextView tv : textViews) {
-    		if(disabled) {
+        boolean disabled = checkboxDisabled.isChecked();
+
+        List<Integer> textViewIDs = Arrays.asList(R.id.view_alert_text,
+                R.id.view_alert_threshold,
+                R.id.view_alert_default_snooze,
+                R.id.view_alert_mp3_file,
+                R.id.view_alert_time_between,
+                R.id.view_alert_disable,
+                R.id.view_alert_time,
+                R.id.view_alert_override_silent,
+                R.id.view_alert_vibrate);
+
+        for (Integer textViewId : textViewIDs) {
+            TextView tv = findViewById(textViewId);
+
+            if (disabled) {
                 tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
-            	tv.setPaintFlags(tv.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                tv.setPaintFlags(tv.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
             }
-    	}
+        }
     }
     
 
