@@ -17,11 +17,13 @@ import org.robolectric.RuntimeEnvironment;
 import lombok.val;
 
 /**
+ * Tests for {@link XdripNotificationCompat}.
+ * <p>
  * From API 26 a notification posted to a channel that does not exist is silently dropped, so every
  * notification {@link XdripNotificationCompat#build} hands back must carry a channel that has
  * actually been created.
  *
- * @author Asbjørn Aarrestad - asbjorn@aarrestad.com - 2026.07
+ * @author Asbjørn Aarrestad - 2026.07
  */
 public class XdripNotificationCompatTest extends RobolectricTestWithConfig {
 
@@ -29,8 +31,13 @@ public class XdripNotificationCompatTest extends RobolectricTestWithConfig {
 
     @Test
     public void buildUsesTheChannelDerivedFromTheBuilder() {
-        val notification = XdripNotificationCompat.build(builderOn(SENSOR_EXPIRY_CHANNEL));
+        // :: Setup
+        val builder = builderOn(SENSOR_EXPIRY_CHANNEL);
 
+        // :: Act
+        val notification = XdripNotificationCompat.build(builder);
+
+        // :: Verify
         assertWithMessage("channel derived from the builder")
                 .that(notification.getChannelId()).startsWith(SENSOR_EXPIRY_CHANNEL);
         assertChannelExists(notification.getChannelId());
@@ -40,16 +47,26 @@ public class XdripNotificationCompatTest extends RobolectricTestWithConfig {
 
     @Test
     public void buildFallsBackToTheGeneralChannelWhenTheBuilderHasNoChannel() {
-        val notification = XdripNotificationCompat.build(builderOn(null));
+        // :: Setup
+        val builder = builderOn(null);
 
+        // :: Act
+        val notification = XdripNotificationCompat.build(builder);
+
+        // :: Verify
         assertWithMessage("fallback channel")
                 .that(notification.getChannelId()).isEqualTo(GENERAL_CHANNEL);
     }
 
     @Test
     public void buildCreatesTheFallbackChannelItPostsTo() {
-        val notification = XdripNotificationCompat.build(builderOn(null));
+        // :: Setup
+        val builder = builderOn(null);
 
+        // :: Act
+        val notification = XdripNotificationCompat.build(builder);
+
+        // :: Verify
         assertChannelExists(notification.getChannelId());
     }
 

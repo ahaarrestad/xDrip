@@ -5,7 +5,6 @@ import static com.eveningoutpost.dexdrip.utilitymodels.NotificationChannels.SENS
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
 
 import androidx.core.app.NotificationCompat;
 
@@ -35,16 +34,20 @@ public class NotificationChannelsTest extends RobolectricTestWithConfig {
 
     @Test
     public void getStringReturnsDisplayNameForSensorExpiryChannel() {
-        assertWithMessage("sensor expiry channel display name")
-                .that(NotificationChannels.getString(SENSOR_EXPIRY_CHANNEL))
-                .isEqualTo(SENSOR_EXPIRY_NAME);
+        // :: Act
+        val name = NotificationChannels.getString(SENSOR_EXPIRY_CHANNEL);
+
+        // :: Verify
+        assertWithMessage("sensor expiry channel display name").that(name).isEqualTo(SENSOR_EXPIRY_NAME);
     }
 
     @Test
     public void getStringReturnsDisplayNameForGeneralChannel() {
-        assertWithMessage("general channel display name")
-                .that(NotificationChannels.getString(GENERAL_CHANNEL))
-                .isEqualTo(GENERAL_NAME);
+        // :: Act
+        val name = NotificationChannels.getString(GENERAL_CHANNEL);
+
+        // :: Verify
+        assertWithMessage("general channel display name").that(name).isEqualTo(GENERAL_NAME);
     }
 
     // the channel a notification is actually posted to: getChan appends a hash of the
@@ -52,25 +55,37 @@ public class NotificationChannelsTest extends RobolectricTestWithConfig {
 
     @Test
     public void getChanNamesSensorExpiryChannelAfterItsDisplayName() {
-        val channel = getChanFor(SENSOR_EXPIRY_CHANNEL);
+        // :: Setup
+        val builder = notificationOn(SENSOR_EXPIRY_CHANNEL);
+
+        // :: Act
+        val channel = NotificationChannels.getChan(builder);
+
+        // :: Verify
         assertWithMessage("sensor expiry channel id").that(channel.getId()).startsWith(SENSOR_EXPIRY_CHANNEL);
         assertWithMessage("sensor expiry channel name").that(channel.getName().toString()).startsWith(SENSOR_EXPIRY_NAME);
     }
 
     @Test
     public void getChanNamesGeneralChannelAfterItsDisplayName() {
-        val channel = getChanFor(GENERAL_CHANNEL);
+        // :: Setup
+        val builder = notificationOn(GENERAL_CHANNEL);
+
+        // :: Act
+        val channel = NotificationChannels.getChan(builder);
+
+        // :: Verify
         assertWithMessage("general channel id").that(channel.getId()).startsWith(GENERAL_CHANNEL);
         assertWithMessage("general channel name").that(channel.getName().toString()).startsWith(GENERAL_NAME);
     }
 
     /** Builds a notification the way {@code JoH.showNotification} does, with vibration and lights. */
-    private NotificationChannel getChanFor(final String channelId) {
+    private NotificationCompat.Builder notificationOn(final String channelId) {
         val builder = new NotificationCompat.Builder(RuntimeEnvironment.getApplication().getApplicationContext(), channelId);
         builder.setContentTitle("title");
         builder.setContentText("content");
         builder.setVibrate(pattern);
         builder.setLights(0xff00ff00, 300, 1000);
-        return NotificationChannels.getChan(builder);
+        return builder;
     }
 }
