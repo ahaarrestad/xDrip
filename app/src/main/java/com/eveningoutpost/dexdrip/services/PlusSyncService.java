@@ -54,7 +54,11 @@ public class PlusSyncService extends Service {
         }
         if ((GcmActivity.token != null) && (xdrip.getAppContext() != null)) return;
         Log.d(TAG, "Starting jamorham xDrip-Plus sync service: " + source);
-        context.startService(new Intent(context, PlusSyncService.class));
+        try {
+            context.startService(new Intent(context, PlusSyncService.class));
+        } catch (Exception e) {
+            Log.e(TAG, "Could not start sync service: " + e);
+        }
     }
 
     public static void backoff() {

@@ -1360,7 +1360,11 @@ public class JoH {
     }
 
     public static void startService(Class c) {
-        xdrip.getAppContext().startService(new Intent(xdrip.getAppContext(), c));
+        try {
+            xdrip.getAppContext().startService(new Intent(xdrip.getAppContext(), c));
+        } catch (Exception e) {
+            Log.e(TAG, "Could not start service: " + c.getSimpleName() + " " + e);
+        }
     }
 
     public static void startService(final Class c, final String... args) {
@@ -1378,7 +1382,11 @@ public class JoH {
         for (int i = 0; i < args.length; i += 2) {
             intent.putExtra(args[i], args[i + 1]);
         }
-        xdrip.getAppContext().startService(intent);
+        try {
+            xdrip.getAppContext().startService(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Could not start service: " + c.getSimpleName() + " " + e);
+        }
     }
 
 
