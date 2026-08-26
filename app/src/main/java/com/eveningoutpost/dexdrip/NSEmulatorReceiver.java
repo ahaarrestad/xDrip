@@ -45,6 +45,8 @@ public class NSEmulatorReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
+        android.util.Log.d("OOP2PROBE", "delivery class=" + getClass().getName()
+                + " component=" + intent.getComponent() + " pkg=" + intent.getPackage());
         new Thread() {
             @Override
             public void run() {

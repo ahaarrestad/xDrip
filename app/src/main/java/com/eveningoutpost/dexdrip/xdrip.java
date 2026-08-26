@@ -116,7 +116,11 @@ public class xdrip extends Application {
         registerReceiver(new NSEmulatorReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getComponent() != null) return; // Ignore Explicit (Manifest handles it)
+                android.util.Log.d("OOP2PROBE", "runtime-subclass reached, component=" + intent.getComponent());
+                if (intent.getComponent() != null) {
+                    android.util.Log.d("OOP2PROBE", "runtime-subclass GUARD FIRED, dropping");
+                    return; // Ignore Explicit (Manifest handles it)
+                }
                 super.onReceive(context, intent);
             }
         }, bgFilter);
