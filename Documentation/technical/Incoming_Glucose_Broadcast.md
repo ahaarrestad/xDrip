@@ -96,12 +96,15 @@ defaults to zero — the reading is still stored, and will display as flat.
 
 Recognised `"direction"` values, with the slope each maps to in mg/dL per minute:
 
-| Value | Slope | Value | Slope |
-|-------|-------|-------|-------|
-| `DoubleUp` | +4 | `DoubleDown` | -3.5 |
-| `SingleUp` | +3.5 | `SingleDown` | -2 |
-| `FortyFiveUp` | +2 | `FortyFiveDown` | -1 |
-| `Flat` | 0 | | |
+| Value | Slope |
+|-------|-------|
+| `DoubleUp` | +4 |
+| `SingleUp` | +3.5 |
+| `FortyFiveUp` | +2 |
+| `Flat` | 0 |
+| `FortyFiveDown` | -1 |
+| `SingleDown` | -2 |
+| `DoubleDown` | -3.5 |
 
 `NONE`, `NOT_COMPUTABLE`, `NOT COMPUTABLE`, `OUT_OF_RANGE` and `OUT OF RANGE` are accepted and map
 to zero. These are fixed representative slopes rather than range boundaries; see
