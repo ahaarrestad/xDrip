@@ -30,8 +30,7 @@ public class NotificationChannelsTest extends RobolectricTestWithConfig {
 
     /**
      * Each of these channels resolves to a display name rather than falling back to its raw channel
-     * id. {@code PARAKEET_STATUS_CHANNEL} is deliberately left out although it is currently mapped:
-     * it is removed later in this series, and listing it here would make this test fail that change.
+     * id.
      */
     @Test
     public void mappedChannelsResolveToDisplayNames() {
@@ -57,5 +56,20 @@ public class NotificationChannelsTest extends RobolectricTestWithConfig {
             assertWithMessage("channel " + channel + " is not displayed as its raw id")
                     .that(name).isNotEqualTo(channel);
         }
+    }
+
+    /**
+     * The Parakeet status channel is no longer mapped. An id that is not in the map is displayed as
+     * itself, and that fallback is what makes the later removal of the Parakeet display strings a
+     * successful build rather than a resource-linking failure.
+     */
+    @Test
+    public void theParakeetStatusChannelIsNoLongerMapped() {
+        // :: Act
+        val name = NotificationChannels.getString("parakeetStatusChannel");
+
+        // :: Verify
+        assertWithMessage("the removed channel falls back to its raw id")
+                .that(name).isEqualTo("parakeetStatusChannel");
     }
 }

@@ -39,7 +39,6 @@ public class NotificationChannels {
     public static final String LOW_BRIDGE_BATTERY_CHANNEL = "lowBridgeBattery";
     public static final String LOW_TRANSMITTER_BATTERY_CHANNEL = "lowTransmitterBattery";
     public static final String NIGHTSCOUT_UPLOADER_CHANNEL = "nightscoutUploaderChannel";
-    public static final String PARAKEET_STATUS_CHANNEL = "parakeetStatusChannel";
     public static final String REMINDER_CHANNEL = "reminderChannel";
     public static final String BG_ALERT_CHANNEL = "bgAlertChannel";
     public static final String BG_MISSED_ALERT_CHANNEL = "bgMissedAlertChannel";
@@ -66,7 +65,6 @@ public class NotificationChannels {
         map.put(LOW_BRIDGE_BATTERY_CHANNEL, xdrip.getAppContext().getString(R.string.low_bridge_battery));
         map.put(LOW_TRANSMITTER_BATTERY_CHANNEL, xdrip.getAppContext().getString(R.string.transmitter_battery));
         map.put(NIGHTSCOUT_UPLOADER_CHANNEL, "Nightscout");
-        map.put(PARAKEET_STATUS_CHANNEL, xdrip.getAppContext().getString(R.string.parakeet_related_alerts));
         map.put(REMINDER_CHANNEL, xdrip.getAppContext().getString(R.string.reminders));
         map.put(BG_ALERT_CHANNEL, xdrip.getAppContext().getString(R.string.glucose_alerts_settings));
         map.put(BG_MISSED_ALERT_CHANNEL, xdrip.getAppContext().getString(R.string.missed_reading_alert));
