@@ -961,12 +961,6 @@
                 android:switchTextOff="@string/short_off_text_for_switches"
                 android:switchTextOn="@string/short_on_text_for_switches"
                 android:title="@string/title_libre_whole_house_collector" />
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:dependency="plus_follow_master"
-                android:key="plus_follow_geolocation"
-                android:summary="@string/send_parakeet_map_location_to_followers"
-                android:title="@string/sync_parakeet_geolocation" />
             <PreferenceScreen
                 android:key="xdrip_plus_remote_snooze_settings"
                 android:summary="@string/remote_snoozes"

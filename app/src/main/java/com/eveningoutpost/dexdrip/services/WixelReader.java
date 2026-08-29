@@ -6,7 +6,6 @@ import android.os.PowerManager;
 
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
-import com.eveningoutpost.dexdrip.MapsActivity;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.Calibration;
 import com.eveningoutpost.dexdrip.models.JoH;
@@ -277,13 +276,7 @@ public class WixelReader extends AsyncTask<String, Void, Void> {
                     // parakeet web service.
 
                     if ((trd.GeoLocation != null)) {
-                        if (!trd.GeoLocation.equals("-15,-15")) {
-                            try {
-                                MapsActivity.newMapLocation(trd.GeoLocation, trd.CaptureDateTime);
-                            } catch (Exception e) {
-                                Log.e(TAG, "Exception with maps activity: " + e.toString());
-                            }
-                        } else {
+                        if (trd.GeoLocation.equals("-15,-15")) {
                             // look a little further if we see usb-wixel data on parakeet app engine
                             processNumberOfRecords = numberOfRecords + 1;
                         }
@@ -422,7 +415,6 @@ public class WixelReader extends AsyncTask<String, Void, Void> {
                 //System.out.println( "data size " +data.length() + " data = "+ data);
                 final TransmitterRawData trd = gson.fromJson(data, TransmitterRawData.class);
                 trd.CaptureDateTime = System.currentTimeMillis() - trd.RelativeTime;
-                MapsActivity.newMapLocation(trd.GeoLocation, trd.CaptureDateTime);
 
                 if (newest_timestamp < trd.getCaptureDateTime()) {
                     statusLog(hostName, JoH.hourMinuteString() + " OK data from:", trd.getCaptureDateTime());
