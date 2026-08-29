@@ -595,7 +595,7 @@ public class WixelReader extends AsyncTask<String, Void, Void> {
                 if (LastReading.UploaderBatteryLife > 0) {
                     Pref.setInt("parakeet_battery", LastReading.UploaderBatteryLife);
                     if (Home.get_master()) {
-                        GcmActivity.sendParakeetBattery(LastReading.UploaderBatteryLife);
+                        GcmActivity.sendUploaderBattery(LastReading.UploaderBatteryLife);
                     }
                 }
 

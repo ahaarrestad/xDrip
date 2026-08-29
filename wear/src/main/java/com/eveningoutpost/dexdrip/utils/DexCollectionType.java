@@ -282,7 +282,7 @@ public enum DexCollectionType {
                     return Pref.getInt("bridge_battery", -1);
             }
         } else if (DexCollectionType.hasWifi()) {
-            return Pref.getInt("parakeet_battery", -3);
+            return Pref.getInt("parakeet_battery", -3); // wifi uploader battery; legacy preference key
         } else {
             return -2;
         }

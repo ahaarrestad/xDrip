@@ -283,7 +283,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private Button stepsButton;
     private Button bpmButton;
     private TextView dexbridgeBattery;
-    private TextView parakeetBattery;
+    private TextView uploaderBattery;
     private TextView sensorAge;
     private TextView currentBgValueText;
     private TextView notificationText;
@@ -418,7 +418,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         //findViewById(R.id.home_layout_holder).setBackgroundColor(getCol(X.color_home_chart_background));
         this.dexbridgeBattery = (TextView) findViewById(R.id.textBridgeBattery);
-        this.parakeetBattery = (TextView) findViewById(R.id.parakeetbattery);
+        this.uploaderBattery = (TextView) findViewById(R.id.uploaderbattery);
         this.sensorAge = (TextView) findViewById(R.id.libstatus);
         this.extraStatusLineText = (TextView) findViewById(R.id.extraStatusLine);
         this.currentBgValueText = (TextView) findViewById(R.id.currentBgValueRealTime);
@@ -427,7 +427,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         extraStatusLineText.setText("");
         dexbridgeBattery.setText("");
-        parakeetBattery.setText("");
+        uploaderBattery.setText("");
         sensorAge.setText("");
 
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
@@ -2956,28 +2956,28 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         if (DexCollectionType.hasWifi()) {
-            final int bridgeBattery = Pref.getInt("parakeet_battery", 0);
-            if (bridgeBattery > 0) {
-                if (bridgeBattery < 50) {
-                    parakeetBattery.setText(getString(R.string.parakeet_battery) + ": " + bridgeBattery + "%");
+            final int uploaderBatteryLevel = Pref.getInt("parakeet_battery", 0);
+            if (uploaderBatteryLevel > 0) {
+                if (uploaderBatteryLevel < 50) {
+                    uploaderBattery.setText(getString(R.string.uploader_battery) + ": " + uploaderBatteryLevel + "%");
 
-                    if (bridgeBattery < 40) {
-                        parakeetBattery.setTextColor(Color.RED);
+                    if (uploaderBatteryLevel < 40) {
+                        uploaderBattery.setTextColor(Color.RED);
                     } else {
-                        parakeetBattery.setTextColor(Color.YELLOW);
+                        uploaderBattery.setTextColor(Color.YELLOW);
                     }
-                    parakeetBattery.setVisibility(View.VISIBLE);
+                    uploaderBattery.setVisibility(View.VISIBLE);
                 } else {
-                    parakeetBattery.setVisibility(View.INVISIBLE);
+                    uploaderBattery.setVisibility(View.INVISIBLE);
                 }
             }
         } else {
-            parakeetBattery.setVisibility(View.INVISIBLE);
+            uploaderBattery.setVisibility(View.INVISIBLE);
         }
 
         if (!Pref.getBoolean("display_bridge_battery", true)) {
             dexbridgeBattery.setVisibility(View.INVISIBLE);
-            parakeetBattery.setVisibility(View.INVISIBLE);
+            uploaderBattery.setVisibility(View.INVISIBLE);
         }
 
         final int sensor_age = Pref.getInt("nfc_sensor_age", 0);
