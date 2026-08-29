@@ -600,11 +600,6 @@
                 android:title="@string/title_public_notifications" />
             <CheckBoxPreference
                 android:defaultValue="true"
-                android:key="plus_extra_features"
-                android:summary="@string/show_test_features"
-                android:title="@string/parakeet_and_extra_features" />
-            <CheckBoxPreference
-                android:defaultValue="true"
                 android:key="plus_show_reminders"
                 android:summary="@string/show_reminder_features"
                 android:title="@string/enable_reminder_features" />
