@@ -239,8 +239,6 @@ public class SystemStatusFragment extends Fragment {
         setCurrentDevice();
         if (Home.get_follower()) {
             setConnectionStatusFollower();
-        } else if (prefs.getString("dex_collection_method", "bogus").equals("WifiWixel")) {
-            setConnectionStatusWifiWixel();
         } else {
             setConnectionStatus();
         }
@@ -367,14 +365,6 @@ public class SystemStatusFragment extends Fragment {
             connection_status.setText(safeGetContext().getString(R.string.no_data));
         } else {
             connection_status.setText((JoH.qs((JoH.ts() - GcmListenerSvc.lastMessageReceived) / 60000, 0)) + " mins ago");
-        }
-    }
-
-    private void setConnectionStatusWifiWixel() {
-        if (ParakeetHelper.isParakeetCheckingIn()) {
-            connection_status.setText(ParakeetHelper.parakeetStatusString());
-        } else {
-            connection_status.setText(safeGetContext().getString(R.string.no_data));
         }
     }
 

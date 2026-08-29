@@ -620,7 +620,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         checkBadSettings();
         // lower priority
         PlusSyncService.startSyncService(getApplicationContext(), "HomeOnCreate");
-        ParakeetHelper.notifyOnNextCheckin(false);
 
         if (checkedeula && (!getString(R.string.app_name).equals("xDrip"))) {
             showcasemenu(SHOWCASE_VARIANT);
@@ -3258,13 +3257,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             menuItem.setVisible(false);
         }
 
-        boolean parakeet_menu_items = false;
-        if (DexCollectionType.hasWifi()) {
-            parakeet_menu_items = Pref.getBoolean("plus_extra_features", false);
-        }
-        menu.findItem(R.id.showmap).setVisible(parakeet_menu_items);
-        menu.findItem(R.id.parakeetsetup).setVisible(parakeet_menu_items);
-
         boolean got_data = Experience.gotData();
         menu.findItem(R.id.crowdtranslate).setVisible(got_data);
 
@@ -3480,10 +3472,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         startActivity(new Intent(getApplicationContext(), SdcardImportExport.class));
     }
 
-    public void showMapFromMenu(MenuItem myitem) {
-        startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-    }
-
     public void showHelpFromMenu(MenuItem myitem) {
         startActivity(new Intent(getApplicationContext(), HelpActivity.class));
     }
@@ -3494,22 +3482,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
     public void showAssistFromMenu(MenuItem myitem) {
         startActivity(new Intent(getApplicationContext(), EmergencyAssistActivity.class));
-    }
-
-    public void parakeetSetupMode(MenuItem myitem) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setMessage(R.string.are_you_sure_you_want_switch_parakeet_to_setup);
-
-        alertDialogBuilder.setPositiveButton(R.string.yes_enter_setup_mode, (arg0, arg1) -> {
-            // switch parakeet to setup mode
-            ParakeetHelper.parakeetSetupMode(getApplicationContext());
-        });
-
-
-        alertDialogBuilder.setNegativeButton(R.string.nokeep_parakeet_as_it_is, (dialog, which) -> {/* do nothing*/});
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
     }
 
     public void resendGlucoseToWatch(MenuItem myitem) {

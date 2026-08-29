@@ -10,7 +10,6 @@ import com.eveningoutpost.dexdrip.BestGlucose;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;
-import com.eveningoutpost.dexdrip.ParakeetHelper;
 import com.eveningoutpost.dexdrip.utilitymodels.BgGraphBuilder;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
@@ -183,8 +182,7 @@ public abstract class PebbleDisplayAbstract implements PebbleDisplayInterface {
     public boolean doWeDisplayWixelBatteryStatus() {
         DexCollectionType dexCollectionType = getDexCollectionType();
 
-        return ((dexCollectionType == DexCollectionType.DexbridgeWixel || //
-                (dexCollectionType == DexCollectionType.WifiWixel && ParakeetHelper.isRealParakeetDevice())) &&
+        return (dexCollectionType == DexCollectionType.DexbridgeWixel &&
                 getBooleanValue("display_bridge_battery", true));
     }
 

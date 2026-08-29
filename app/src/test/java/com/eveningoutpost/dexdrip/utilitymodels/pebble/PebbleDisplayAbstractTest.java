@@ -132,6 +132,68 @@ public class PebbleDisplayAbstractTest extends RobolectricTestWithConfig {
         assertThat(whenFollower).isFalse();
     }
 
+    // --- doWeDisplayWixelBatteryStatus ---
+
+    /** A DexbridgeWixel shows the bridge battery on the watchface while the preference allows it. */
+    @Test
+    public void doWeDisplayWixelBatteryStatus_isTrueForDexbridgeWixel() {
+        // :: Setup
+        storeString("dex_collection_method", "DexbridgeWixel");
+        storeBoolean("display_bridge_battery", true);
+
+        // :: Act
+        boolean displayed = display.doWeDisplayWixelBatteryStatus();
+
+        // :: Verify
+        assertThat(displayed).isTrue();
+    }
+
+    /** The preference switches the display off for the collector that would otherwise show it. */
+    @Test
+    public void doWeDisplayWixelBatteryStatus_isFalseWhenThePreferenceIsOff() {
+        // :: Setup
+        storeString("dex_collection_method", "DexbridgeWixel");
+        storeBoolean("display_bridge_battery", false);
+
+        // :: Act
+        boolean displayed = display.doWeDisplayWixelBatteryStatus();
+
+        // :: Verify
+        assertThat(displayed).isFalse();
+    }
+
+    /**
+     * A WifiWixel does not show the bridge battery, so the watchface falls through to the phone
+     * battery. Before the Parakeet removal this held only while no Parakeet was checking in; it now
+     * holds unconditionally, and dropping the guard rather than the whole arm would have shown "0".
+     */
+    @Test
+    public void doWeDisplayWixelBatteryStatus_isFalseForWifiWixel() {
+        // :: Setup
+        storeString("dex_collection_method", "WifiWixel");
+        storeBoolean("display_bridge_battery", true);
+
+        // :: Act
+        boolean displayed = display.doWeDisplayWixelBatteryStatus();
+
+        // :: Verify
+        assertThat(displayed).isFalse();
+    }
+
+    /** No other collector shows the bridge battery, whatever the preference says. */
+    @Test
+    public void doWeDisplayWixelBatteryStatus_isFalseForOtherCollectors() {
+        // :: Setup
+        storeString("dex_collection_method", "Follower");
+        storeBoolean("display_bridge_battery", true);
+
+        // :: Act
+        boolean displayed = display.doWeDisplayWixelBatteryStatus();
+
+        // :: Verify
+        assertThat(displayed).isFalse();
+    }
+
     // --- Helpers ---
 
     private void storeInt(String key, int value) {
@@ -142,6 +204,11 @@ public class PebbleDisplayAbstractTest extends RobolectricTestWithConfig {
     private void storeString(String key, String value) {
         PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext())
                 .edit().putString(key, value).commit();
+    }
+
+    private void storeBoolean(String key, boolean value) {
+        PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext())
+                .edit().putBoolean(key, value).commit();
     }
 
     /**
