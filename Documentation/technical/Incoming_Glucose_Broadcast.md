@@ -1,67 +1,35 @@
-# Integration with xDrip+ via Broadcast Intent
+# Integration with xDrip via Broadcast Intent
 
 ## Overview
 
-This page describes how a third-party Android application sends a glucose sensor reading to xDrip+
-using a broadcast intent, and what xDrip+ does with what it receives. It is written for app
-developers and sensor manufacturers.
+This page is for developers of Android apps and sensors that send glucose readings to xDrip. It
+covers the Nightscout Emulation receiver, and only the insertion of glucose records.
 
-xDrip+ has several broadcast receivers. This page documents the Nightscout Emulation receiver, and
-only the insertion of glucose records.
+**Address the broadcast to xDrip explicitly.** That is the one thing worth taking from this page.
 
-## Before anything else: xDrip+ must be set up to accept the broadcast
+On the xDrip side the user sets `Hardware Data Source` to `640G / EverSense`. That is their setup
+rather than yours — you need it only to test against a real install — but until it is done the
+receiver rejects everything.
 
-The receiver rejects everything unless xDrip+ is configured to expect it. This is the xDrip+ user's
-setup rather than something your app controls, but nothing works until it is done, so it belongs at
-the start rather than at the end.
+## Sending the broadcast
 
-The broadcast is accepted when any one of these holds:
-
-- `Hardware Data Source` is set to **`640G / EverSense`** — the normal choice for a broadcasting app,
-  or
-- `Hardware Data Source` is set to **`xDrip+ Sync Follower`**, or
-- the **`Out of process Libre algorithm.`** option is enabled (Advanced Settings).
-
-Two warnings about that list:
-
-- **`xDrip+ Sync Follower` is the only "follower" that qualifies.** `Nightscout Follower`,
-  `Dex Share Follower`, `Web Follower` and `CareLink Follower` are different settings and the
-  receiver rejects broadcasts under all of them. Do not tell a user "you are a follower, this will
-  work."
-- **`Hardware Data Source` is single-choice.** Selecting `640G / EverSense` disconnects whatever
-  collector the user had. Warn users before telling them to change it.
-
-Settings are cached when the xDrip+ process starts. After changing any of them, the phone must be
-rebooted, or xDrip+ force-stopped — closing and reopening the app is not enough.
-
-## Sending a Broadcast Intent
-
-### Intent action
+### Address it to xDrip
 
 ```java
 Intent intent = new Intent("com.eveningoutpost.dexdrip.NS_EMULATOR");
-```
-
-### Target xDrip+ explicitly
-
-Set the package on every broadcast:
-
-```java
 intent.setPackage("com.eveningoutpost.dexdrip");
 ```
 
-This is required. From Android 8 (API 26) onward, manifest-declared receivers no longer receive
-implicit broadcasts, and xDrip+ targets API 26, so the restriction applies.
+`setPackage` is required. Since Android 8 (API 26) manifest-declared receivers no longer get
+implicit broadcasts, and xDrip targets API 26.
 
-An implicit broadcast — one sent without `setPackage` — does still work while the xDrip+ process is
-running, because xDrip+ also registers this receiver at runtime. It stops working the moment the
-process is not running, and the reading is then delivered nowhere. Always name the package.
+An implicit broadcast — one sent without `setPackage` — will appear to work, because xDrip also
+registers this receiver at runtime. It stops working the moment the xDrip process is not running,
+and the reading then goes nowhere with no error on either side. That is what makes an integration
+look intermittent rather than broken. Always name the package.
 
-### Package visibility (sending app targets API 30 or later)
-
-If your app's `targetSdkVersion` is 30 or higher, Android's package visibility rules apply and
-`setPackage` alone is not enough — xDrip+ must also be visible to your app. Declare it in your
-manifest, as a direct child of `<manifest>`:
+If your app targets API 30 or later, package visibility rules apply and `setPackage` alone is not
+enough. Declare xDrip in your manifest, as a direct child of `<manifest>`:
 
 ```xml
 <queries>
@@ -69,19 +37,14 @@ manifest, as a direct child of `<manifest>`:
 </queries>
 ```
 
-Without this, xDrip+ is not visible to your app and the broadcast is not delivered.
-
 No permission is required to send this broadcast.
 
-### Extra parameters
+### Extras
 
-Two extras are required:
-
-- `"collection"` — set to `"entries"`. **If this extra is missing the broadcast is discarded
-  without any error.**
+- `"collection"` — set to `"entries"`. **Without this extra the broadcast is discarded silently.**
 - `"data"` — the reading, as a JSON array **string**.
 
-### JSON payload structure
+### The reading
 
 | Attribute | Required | Value |
 |-----------|----------|-------|
@@ -90,11 +53,8 @@ Two extras are required:
 | `"sgv"` | Yes | The glucose value in **mg/dL**. |
 | `"direction"` | No | Trend, as one of the strings below. |
 
-If `"type"`, `"date"` or `"sgv"` is missing or unparseable, the whole reading is dropped. If
-`"direction"` is missing, unparseable, or not one of the recognised strings, the trend slope silently
-defaults to zero — the reading is still stored, and will display as flat.
-
-Recognised `"direction"` values, with the slope each maps to in mg/dL per minute:
+If `"type"`, `"date"` or `"sgv"` is missing or unparseable, the reading is dropped. An unrecognised
+`"direction"` is not fatal — the reading is stored with a flat trend.
 
 | Value | Slope |
 |-------|-------|
@@ -106,18 +66,17 @@ Recognised `"direction"` values, with the slope each maps to in mg/dL per minute
 | `SingleDown` | -2 |
 | `DoubleDown` | -3.5 |
 
-`NONE`, `NOT_COMPUTABLE`, `NOT COMPUTABLE`, `OUT_OF_RANGE` and `OUT OF RANGE` are accepted and map
-to zero. These are fixed representative slopes rather than range boundaries; see
+`NONE`, `NOT_COMPUTABLE`, `OUT_OF_RANGE` and their space-separated forms are accepted and map to
+zero. These are fixed representative slopes in mg/dL per minute, not range boundaries; see
 `BgReading.slopefromName()` for the current mapping.
 
-**Values are taken as given.** The value you send is stored as both the calculated and the raw
-value. xDrip+ does not apply its own calibration to it, and does not range-check it — a value in
-mmol/L is stored as mmol/L and displayed as a critical low. Send mg/dL.
+Two rules that are easy to miss:
 
-**Send exactly one reading per broadcast.** The array length is used to distinguish this payload
-from an internal one: an array with more than one element is treated as an out-of-process algorithm
-result and handed to a different parser, and your readings are not inserted. Put one object in the
-array and send another broadcast for the next reading.
+- **Send mg/dL.** The value is stored as given, as both the calculated and the raw value. xDrip does
+  not calibrate it and does not range-check it, so a mmol/L value is stored unchanged and displays
+  as a critical low.
+- **One reading per broadcast.** The array length is what distinguishes this payload from an
+  internal one: more than one element is routed to a different parser and nothing is inserted.
 
 ### Complete example
 
@@ -146,92 +105,51 @@ void sendReading(Context context, long timestamp, int mgdl, String direction) th
 }
 ```
 
-A similar example, wired up against the receiver, is in the unit test source tree in
+The same call, wired up against the receiver, is in the unit test source tree in
 `NSEmulatorReceiverTest.bgReadingExampleBroadcast()`.
 
-## How often you can send
+## How often to send
 
-xDrip+ discards an incoming reading whose timestamp falls too close to one it already holds. The
-margin is derived from the sample period configured on the xDrip+ side, and is applied either side
-of the timestamp — currently four fifths of the period, so **4 minutes either side on the default
-5-minute sample period**.
+xDrip discards a reading whose timestamp falls too close to one it already holds. The margin is four
+fifths of the sample period, applied either side of the timestamp:
 
-For this receiver the sample period is not freely selectable. There are two values:
-
-| xDrip+ setting | Sample period | Readings rejected if closer than |
+| xDrip setting | Sample period | Readings rejected if closer than |
 |---|---|---|
 | default | 5 minutes | 4 minutes |
 | `640G/Eversense 1-minute` enabled | 1 minute | 48 seconds |
 
-The `640G/Eversense 1-minute` checkbox lives in Advanced Settings, depends on **engineering mode**
-being enabled first, and its own summary warns that the feature is under development. The
-`Sample period` dropdown in xDrip+ settings applies to Nightscout Follower mode and has no effect
-here.
+Send at most one reading per sample period. A sensor reading faster than that loses readings
+silently, and the result looks like a slow trace rather than an error.
 
-**Design for this.** A sensor that reads more often than the margin allows will have readings
-dropped, silently, and the result looks like a working but slower trace rather than an error. A
-3-minute sensor on the default setting loses every second reading: at t=0, 3, 6, 9, 12 minutes, the
-readings at 3 and 9 fall inside the 4-minute window of the one before and are discarded.
+Backfill works — one broadcast per reading, spaced wider than the margin — but every inserted
+reading is treated as live: it fires alerts and reaches followers and watches as though it had just
+arrived. Do not send timestamps in the future.
 
-If your sensor's interval is shorter than 4 minutes, either send at most one reading per 5 minutes
-and drop the rest yourself, or document for your users that they must enable engineering mode and
-the 1-minute option — and that the phone needs a reboot afterwards.
+## When nothing arrives
 
-Note also that the duplicate check is not scoped to a sensor session: a reading from a previous
-session at the same clock time will block the insert.
-
-### Backfilling
-
-Backfill works — send one broadcast per reading, spaced further apart than the margin. Two things to
-know before you do:
-
-- Every inserted reading is treated as live: it triggers alert evaluation and is forwarded to
-  followers and watches. Backfilling an hour of history fires alerts as though each old reading had
-  just arrived.
-- Timestamps in the future are stored, but xDrip+ records a high-severity entry in its event log for
-  each one. Do not send them.
-
-## How failures surface
-
-Most failures on this path are silent, which makes the two that are not worth knowing about first.
-
-**These are recorded in xDrip+'s Event Log**, visible to the user in the app — ask a user to check
-there before assuming nothing arrived:
-
-| Cause | What appears |
-|-------|--------------|
-| xDrip+ not set up to accept the broadcast | `Received NSEmulator data but we are not a follower or emulator receiver` |
-| Malformed JSON, or a missing `date` / `sgv` | `Got JSON exception: …` |
-| `"type"` other than `"sgv"` | `Unknown entries type: …` |
-| Timestamp in the future | A high-severity entry naming the timestamp |
-
-That first row is the most common failure of all, and the event log distinguishes *not delivered*
-from *delivered and rejected*, which nothing else does.
-
-**These produce nothing the user can see:**
+Most failures on this path are silent, and your app gets no error either way:
 
 | Cause | Result |
 |-------|--------|
-| `"collection"` extra missing | Broadcast discarded |
-| More than one reading in the array | Handed to another parser, reading not inserted |
-| Broadcast sent implicitly, xDrip+ process not running | Never delivered |
-| Sending app targets API 30+ without the `<queries>` entry | Never delivered |
+| `"collection"` extra missing | Discarded |
+| More than one reading in the array | Routed to another parser, nothing inserted |
+| Sent implicitly, xDrip process not running | Never delivered |
+| App targets API 30 or later without the `<queries>` entry | Never delivered |
 | Reading too close in time to an existing one | Discarded as a duplicate |
-| Unrecognised `"direction"` | Stored with a flat trend |
+| xDrip not set up to accept the broadcast | Rejected, recorded in the Event Log |
+| Malformed JSON, or a missing `"date"` / `"sgv"` | Rejected, recorded in the Event Log |
 
-There is one visible side effect that is not a failure: if xDrip+ has no active sensor, your
-broadcast causes the toast *"Please use: Start Sensor from the menu for best results!"*. The reading
-is still stored — a sensor record is created automatically — but users may see the toast and report
-it against your app.
+xDrip's **Event Log**, visible to the user in the app, is the only thing that distinguishes *not
+delivered* from *delivered and rejected*. Ask a user to check it before assuming nothing arrived.
 
-### Debugging
+To debug against a live install:
 
 - The logcat tag for this receiver is `jamorham nsemulator`.
-- Debug-level lines from that tag can be promoted into the in-app log with the **Extra tags for
-  logging** setting in Advanced Settings. This is the way to see duplicate-rejection messages, which
-  are otherwise invisible.
-- On a successful insert xDrip+ broadcasts `com.eveningoutpost.dexdrip.BgEstimate`. Listening for it
-  is a reliable way to confirm from your own app that a reading actually landed.
-- When watching logcat you may see a broadcast processed twice. xDrip+ registers this receiver both
-  in its manifest and at runtime, and a `setPackage` broadcast matches both. The duplicate is removed
-  by the timestamp check above, so only one reading is stored.
+- **Extra tags for logging** in Advanced Settings promotes that tag's debug lines into the in-app
+  log. This is the only way to see duplicate rejections.
+- On a successful insert xDrip broadcasts `com.eveningoutpost.dexdrip.BgEstimate`. Listening for it
+  confirms from your own app that a reading actually landed.
+
+One visible side effect is not a failure: if xDrip has no active sensor, your broadcast produces the
+toast *"Please use: Start Sensor from the menu for best results!"*. The reading is still stored, but
+users may see the toast and report it against your app.
