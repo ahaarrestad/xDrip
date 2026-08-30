@@ -39,35 +39,6 @@ repositories {
     }
 }
 
-/**
- * Reads a property from the project settings (Gradle properties), the system environment or
- * from the file <code>local.properties</code>.
- *
- * @param propertyName the name of the property to read
- * @return the property value or an empty string
- */
-def getLocalProperty(String propertyName) {
-    def propVal = project.findProperty(propertyName)
-    if (propVal == null) {
-        propVal = System.getenv(propertyName)
-        if (propVal == null)
-            propVal = System.getenv(propertyName.toLowerCase())
-        if (propVal == null)
-            propVal = System.getenv(propertyName.toUpperCase())
-        if (propVal == null) {
-            def propsFile = rootProject.file('local.properties')
-            if (propsFile.exists()) {
-                def props = new Properties()
-                props.load(new FileInputStream(propsFile))
-                propVal = props[propertyName]
-            } else {
-                propVal = ""
-            }
-        }
-    }
-    return propVal
-}
-
 android {
     compileSdk 34 // TODO centralize
 

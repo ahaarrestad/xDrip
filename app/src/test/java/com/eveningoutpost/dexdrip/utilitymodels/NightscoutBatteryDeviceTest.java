@@ -48,6 +48,20 @@ public class NightscoutBatteryDeviceTest extends RobolectricTestWithConfig {
         assertWithMessage("battery level reaches Nightscout").that(json.getInt("battery")).isEqualTo(42);
     }
 
+    /** The type field is wire-visible too, and it is the enum name rather than the device name. */
+    @Test
+    public void wifiUploaderReportsItsTypeAsWifiUploader() throws Exception {
+        // :: Setup
+        Pref.setInt("parakeet_battery", 42);
+
+        // :: Act
+        final JSONObject json = NightscoutBatteryDevice.WIFI_UPLOADER
+                .getUploaderJson(RuntimeEnvironment.getApplication().getApplicationContext());
+
+        // :: Verify
+        assertWithMessage("the type shown in Nightscout").that(json.getString("type")).isEqualTo("WIFI_UPLOADER");
+    }
+
     /** The device name is wire-visible in the Nightscout devicestatus feed. */
     @Test
     public void wifiUploaderReportsItsDeviceName() {

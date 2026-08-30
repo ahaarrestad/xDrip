@@ -1,5 +1,8 @@
 package com.eveningoutpost.dexdrip.utilitymodels.pebble;
 
+import android.content.Intent;
+import android.os.BatteryManager;
+
 import androidx.preference.PreferenceManager;
 
 import com.eveningoutpost.dexdrip.RobolectricTestWithConfig;
@@ -194,7 +197,54 @@ public class PebbleDisplayAbstractTest extends RobolectricTestWithConfig {
         assertThat(displayed).isFalse();
     }
 
+    // --- addBatteryStatusToDictionary ---
+
+    /** An xBridge sends the bridge battery under its own name. */
+    @Test
+    public void addBatteryStatusToDictionary_sendsTheBridgeBatteryForDexbridgeWixel() {
+        // :: Setup
+        storeString("dex_collection_method", "DexbridgeWixel");
+        storeBoolean("display_bridge_battery", true);
+        storeInt("bridge_battery", 42);
+        PebbleDictionary dictionary = new PebbleDictionary();
+
+        // :: Act
+        display.addBatteryStatusToDictionary(dictionary);
+
+        // :: Verify
+        assertThat(dictionary.getString(PebbleDisplayAbstract.UPLOADER_BATTERY_KEY)).isEqualTo("42");
+        assertThat(dictionary.getString(PebbleDisplayAbstract.NAME_KEY)).isEqualTo("Bridge");
+    }
+
+    /**
+     * A WifiWixel sends the phone battery, not the uploader battery. Before the Parakeet removal a
+     * checked-in Parakeet put its own battery in this slot; nothing else ever reached the arm.
+     */
+    @Test
+    public void addBatteryStatusToDictionary_sendsThePhoneBatteryForWifiWixel() {
+        // :: Setup
+        storeString("dex_collection_method", "WifiWixel");
+        storeBoolean("display_bridge_battery", true);
+        storeInt("parakeet_battery", 77);
+        storePhoneBatteryLevel(33);
+        PebbleDictionary dictionary = new PebbleDictionary();
+
+        // :: Act
+        display.addBatteryStatusToDictionary(dictionary);
+
+        // :: Verify
+        assertThat(dictionary.getString(PebbleDisplayAbstract.UPLOADER_BATTERY_KEY)).isEqualTo("33");
+        assertThat(dictionary.getString(PebbleDisplayAbstract.NAME_KEY)).isEqualTo("Phone");
+    }
+
     // --- Helpers ---
+
+    /** The phone battery is read off the sticky battery broadcast, which Robolectric leaves unset. */
+    private void storePhoneBatteryLevel(int percent) {
+        xdrip.getAppContext().sendStickyBroadcast(new Intent(Intent.ACTION_BATTERY_CHANGED)
+                .putExtra(BatteryManager.EXTRA_LEVEL, percent)
+                .putExtra(BatteryManager.EXTRA_SCALE, 100));
+    }
 
     private void storeInt(String key, int value) {
         PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext())

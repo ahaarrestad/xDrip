@@ -239,6 +239,8 @@ public class SystemStatusFragment extends Fragment {
         setCurrentDevice();
         if (Home.get_follower()) {
             setConnectionStatusFollower();
+        } else if (prefs.getString("dex_collection_method", "bogus").equals("WifiWixel")) {
+            setConnectionStatusWifiWixel();
         } else {
             setConnectionStatus();
         }
@@ -366,6 +368,14 @@ public class SystemStatusFragment extends Fragment {
         } else {
             connection_status.setText((JoH.qs((JoH.ts() - GcmListenerSvc.lastMessageReceived) / 60000, 0)) + " mins ago");
         }
+    }
+
+    /**
+     * A wifi uploader is reached over the network, so the bluetooth connection state below says
+     * nothing about it. Report no data rather than claiming the phone is not connected.
+     */
+    private void setConnectionStatusWifiWixel() {
+        connection_status.setText(safeGetContext().getString(R.string.no_data));
     }
 
     public void setConnectionStatus(String msg) {

@@ -219,7 +219,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
     public static boolean activityVisible = false;
-    public static boolean invalidateMenu = false;
     public static boolean blockTouches = false;
     private static boolean is_follower = false;
     private static boolean is_follower_set = false;
@@ -1916,10 +1915,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         LocalBroadcastManager.getInstance(this).registerReceiver(statusReceiver,
                 new IntentFilter(Intents.HOME_STATUS_ACTION));
 
-        if (invalidateMenu) {
-            invalidateOptionsMenu();
-            invalidateMenu = false;
-        }
         activityVisible = true;
         updateCurrentBgInfo("generic on resume");
         updateHealthInfo("generic on resume");

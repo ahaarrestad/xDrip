@@ -205,15 +205,8 @@ public abstract class PebbleDisplayAbstract implements PebbleDisplayInterface {
 
     public void addBatteryStatusToDictionary(PebbleDictionary dictionary) {
         if (doWeDisplayWixelBatteryStatus()) {
-
-            if (isDexBridgeWixel()) {
-                dictionary.addString(UPLOADER_BATTERY_KEY, getBatteryString("bridge_battery"));
-                dictionary.addString(NAME_KEY, "Bridge");
-            } else {
-                dictionary.addString(UPLOADER_BATTERY_KEY, getBatteryString("parakeet_battery"));
-                dictionary.addString(NAME_KEY, "Phone");
-            }
-
+            dictionary.addString(UPLOADER_BATTERY_KEY, getBatteryString("bridge_battery"));
+            dictionary.addString(NAME_KEY, "Bridge");
         } else {
             dictionary.addString(UPLOADER_BATTERY_KEY, getPhoneBatteryStatus());
             dictionary.addString(NAME_KEY, "Phone");
