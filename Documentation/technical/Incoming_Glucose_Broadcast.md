@@ -64,4 +64,4 @@ context.sendBroadcast(intent);
 ```
 
 ## Testing the Integration
-For testing purposes, make sure you set xDrip `Hardware Data Source` to `640G / EverSense` to enable the receiver.
+For testing purposes, make sure you set xDrip `Hardware Data Source` to `Inter-app broadcast` to enable the receiver. Releases made before that option was renamed list it as `640G / EverSense`.
