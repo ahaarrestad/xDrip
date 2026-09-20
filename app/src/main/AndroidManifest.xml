@@ -213,9 +213,29 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <!-- android:path is ignored without a host, so a host is required here
+                     to stop this filter matching every xdrip:// URI (e.g. the
+                     xdrip://connect/nocturne deep link) -->
                 <data
-                    android:path="/callback/tidepool"
-                    android:scheme="xdrip" />
+                    android:scheme="xdrip"
+                    android:host="callback"
+                    android:path="/tidepool" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".nocturne.NocturneConnectActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:label="@string/nocturne_connect_activity_label">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="xdrip"
+                      android:host="connect"
+                      android:path="/nocturne"/>
             </intent-filter>
         </activity>
         <activity
@@ -330,6 +350,12 @@
             <intent-filter>
                 <action android:name="android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED" />
                 <action android:name="android.bluetooth.headset.profile.action.AUDIO_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".wearintegration.ExternalStatusBroadcastReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.eveningoutpost.dexdrip.ExternalStatusline" />
             </intent-filter>
         </receiver>
         <receiver android:name=".utils.DisconnectReceiver">
@@ -633,6 +659,14 @@
                 <action android:name="com.eveningoutpost.dexdrip.FROM_LIBRE_ALARM" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".NSEmulatorReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.eveningoutpost.dexdrip.NS_EMULATOR" />
+                <action android:name="com.eveningoutpost.dexdrip.OOP2_DECODE_FARM_RESULT" />
+                <action android:name="com.eveningoutpost.dexdrip.OOP2_DECODE_BLE_RESULT" />
+                <action android:name="com.eveningoutpost.dexdrip.OOP2_BLUETOOTH_ENABLE_RESULT" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".receivers.aidex.AidexReceiver">
             <intent-filter>
                 <action android:name="com.microtechmd.cgms.aidex.action.BgEstimate" />
@@ -751,23 +785,6 @@
             android:name=".utils.SdcardImportExport"
             android:configChanges="orientation|screenSize"
             android:label="@string/settings_on_external_storage" />
-        <!--
-             The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_maps_api.xml").
-             Note that the API key is linked to the encryption key used to sign the APK.
-             You need a different API key for each encryption key, including the release key that is used to
-             sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/.
-        -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${google_maps_key}" />
-
-        <activity
-            android:name=".MapsActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_maps"
-            android:noHistory="true" />
         <activity
             android:name=".profileeditor.BasalProfileEditor"
             android:configChanges="orientation|keyboardHidden"
