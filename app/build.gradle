@@ -40,7 +40,7 @@ repositories {
 }
 
 android {
-    compileSdk 34 // TODO centralize
+    compileSdk 36 // TODO centralize
 
 
     configurations.all {
