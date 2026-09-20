@@ -224,7 +224,7 @@
     <string name="calibration_alerts">Alertas de calibración</string>
     <string name="missed_reading_alert">Alerta de lecturas perdidas</string>
     <string name="other_alerts">Otras alertas</string>
-    <string name="extra_alerts_xdrip_plus">Alertas adicionales (xDrip+)</string>
+    <string name="extra_alerts_xdrip_plus">Alertas Extras (xDrip+)</string>
     <string name="persistent_high_alert">Alerta alta persistente</string>
     <string name="persistent_high_alert_enable">Activar</string>
     <string name="title_persistent_high_threshold">Límite</string>
@@ -362,6 +362,8 @@
     <string name="all_alerts_disabled_until">"Todas las alertas desactivadas hasta "</string>
     <string name="low_alerts_disabled_until">"Alertas de hipo desactivadas hasta "</string>
     <string name="high_alerts_disabled_until">"Alertas de hiper desactivadas hasta "</string>
+    <string name="active_alert_rerise_at">Existe una alerta activa llamada \"%1$s\" se reactivará en %2$s (%3$s minutos restantes)</string>
+    <string name="active_alert_snoozed_until">Existe una alerta activa llamada \"%1$s\" silenciada hasta %2$s (%3$s minutos restantes)</string>
     <string name="default_snooze">Repetir por defecto</string>
     <string name="until_you_reenable">Hasta que vuelva a activar</string>
     <string name="set">Establecer</string>
