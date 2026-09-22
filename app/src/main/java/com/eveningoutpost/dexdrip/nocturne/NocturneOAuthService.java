@@ -396,6 +396,20 @@ public class NocturneOAuthService {
                 && !PersistentStore.getString(KEY_REFRESH_TOKEN).isEmpty();
     }
 
+    /**
+     * Forgets the stored expiry, so that the next {@link #getValidAccessToken()} attempts a refresh
+     * rather than handing back a token the server has already rejected.
+     * <p>
+     * What that attempt does is {@link #refreshAccessToken()}'s existing behaviour, and it is not
+     * always a new token: a refresh rejected with an OAuth error body clears the credentials and
+     * tells the user to reconnect, any other refresh failure keeps them, and with no refresh token
+     * stored there is no attempt at all. In the last two cases the rejected token is handed back
+     * again and the run fails as before.
+     */
+    public static void expireAccessToken() {
+        PersistentStore.setLong(KEY_TOKEN_EXPIRY, 0);
+    }
+
     // --- Private helpers ---
 
     void storeTokens(final OAuthTokenResponse response) {
