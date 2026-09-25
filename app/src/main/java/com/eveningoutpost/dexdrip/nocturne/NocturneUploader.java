@@ -182,8 +182,11 @@ public class NocturneUploader {
         }
 
         if (tokenRejected) {
-            UserError.Log.e(TAG, "Nocturne rejected the access token - refreshing it on the next run");
-            NocturneOAuthService.expireAccessToken();
+            if (NocturneOAuthService.expireAccessToken()) {
+                UserError.Log.e(TAG, "Nocturne rejected the access token - refreshing it on the next run");
+            } else {
+                UserError.Log.e(TAG, "Nocturne rejected the access token - no refresh is possible");
+            }
         }
 
         return queueSuccess;
@@ -488,8 +491,8 @@ public class NocturneUploader {
      * Only 401 counts. The token is the one thing a 401 is defined to be about, and a server that
      * means "your token is fine but this scope is not" answers 403 (RFC 6750). Unlike
      * {@link NocturneOAuthService#refreshAccessToken()}, which inspects the body before discarding
-     * credentials, this costs nothing worse than one refresh round-trip if a proxy in front of the
-     * instance sends a 401 of its own, so it does not need the same scrutiny.
+     * credentials, this costs nothing worse than one refresh round-trip per run if a proxy in
+     * front of the instance sends a 401 of its own, so it does not need the same scrutiny.
      */
     private void noteIfRejected(final ApiException e) {
         tokenRejected |= e.getCode() == 401;

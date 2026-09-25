@@ -340,6 +340,60 @@ public class NocturneUploaderAuthTest extends RobolectricTestWithConfig {
     }
 
     /**
+     * With no refresh token stored, a rejection leaves the token as it is: the next run sends it
+     * again rather than stopping until the user reconnects.
+     * <p>
+     * Without a refresh token there is nothing to refresh with, so forgetting the expiry would only
+     * make {@code getValidAccessToken()} stop handing the token out.
+     */
+    @Test
+    public void upload_afterARejectionWithNoRefreshToken_keepsSendingTheToken() throws Exception {
+        // :: Setup
+        seedClientId();
+        PersistentStore.setString(REFRESH_TOKEN_KEY, "");
+        server.enqueue(unauthorised());
+        server.enqueue(jsonResponse());
+        assertThat(uploadOneReading()).isFalse();
+        nextRequest(); // the rejected upload
+
+        // :: Act
+        final boolean uploaded = uploadOneReading();
+
+        // :: Verify
+        final RecordedRequest next = nextRequest();
+        assertThat(next.getPath()).isNotEqualTo(TOKEN_PATH);
+        assertThat(next.getHeader("Authorization")).isEqualTo("Bearer " + ACCESS_TOKEN);
+        assertThat(uploaded).isTrue();
+    }
+
+    /**
+     * With no client id stored, a rejection leaves the credentials alone and the next run sends the
+     * same token again.
+     * <p>
+     * A refresh without a client id clears the access and refresh tokens without the reconnect
+     * warning a rejected refresh gives. That still happens when the stored expiry runs out, as
+     * before; a rejection does not bring it forward.
+     */
+    @Test
+    public void upload_afterARejectionWithNoClientId_keepsTheCredentials() throws Exception {
+        // :: Setup
+        server.enqueue(unauthorised());
+        server.enqueue(jsonResponse());
+        assertThat(uploadOneReading()).isFalse();
+        nextRequest(); // the rejected upload
+
+        // :: Act
+        final boolean uploaded = uploadOneReading();
+
+        // :: Verify
+        final RecordedRequest next = nextRequest();
+        assertThat(next.getPath()).isNotEqualTo(TOKEN_PATH);
+        assertThat(next.getHeader("Authorization")).isEqualTo("Bearer " + ACCESS_TOKEN);
+        assertThat(uploaded).isTrue();
+        assertThat(NocturneOAuthService.isConnected()).isTrue();
+    }
+
+    /**
      * A rejected treatment delete arms the refresh too, not only a rejected upload.
      * <p>
      * Deletes report their failures through their own catch rather than the one every upload
