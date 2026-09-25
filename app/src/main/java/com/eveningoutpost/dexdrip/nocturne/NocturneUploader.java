@@ -489,10 +489,9 @@ public class NocturneUploader {
      * Remembers a 401 so that the end of the run can arm a refresh.
      * <p>
      * Only 401 counts. The token is the one thing a 401 is defined to be about, and a server that
-     * means "your token is fine but this scope is not" answers 403 (RFC 6750). Unlike
-     * {@link NocturneOAuthService#refreshAccessToken()}, which inspects the body before discarding
-     * credentials, this costs nothing worse than one refresh round-trip per run if a proxy in
-     * front of the instance sends a 401 of its own, so it does not need the same scrutiny.
+     * means "your token is fine but this scope is not" answers 403 (RFC 6750). A proxy's own 401
+     * also brings the refresh forward; whether that refresh clears the credentials is decided by
+     * {@link NocturneOAuthService#refreshAccessToken()}, as it would be at expiry.
      */
     private void noteIfRejected(final ApiException e) {
         tokenRejected |= e.getCode() == 401;

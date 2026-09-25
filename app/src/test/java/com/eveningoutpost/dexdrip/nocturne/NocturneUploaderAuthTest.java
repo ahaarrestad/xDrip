@@ -70,6 +70,8 @@ public class NocturneUploaderAuthTest extends RobolectricTestWithConfig {
         // Loopback keeps getBaseUrl() from rewriting http:// to https://
         Pref.setString(INSTANCE_URL_KEY, "http://127.0.0.1:" + server.getPort());
         seedAccessToken(ACCESS_TOKEN);
+        // Tests that need a client id seed it; the rest rely on there being none
+        PersistentStore.setString(CLIENT_ID_KEY, "");
         Pref.setBoolean("nocturne_upload_sgv", true);
         disableOptionalStreams();
     }

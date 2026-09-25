@@ -411,10 +411,8 @@ public class NocturneOAuthService {
      * cannot succeed, and forcing one early would stop uploads, or clear the credentials, sooner
      * than the stored expiry would have.
      * <p>
-     * What the attempt does is {@link #refreshAccessToken()}'s existing behaviour, and it is not
-     * always a new token: a refresh rejected with an OAuth error body clears the credentials and
-     * tells the user to reconnect, and any other refresh failure keeps them and hands the rejected
-     * token back, so that run fails as before, one refresh round-trip later.
+     * What the attempt does is {@link #refreshAccessToken()}'s existing behaviour. A refresh that
+     * fails without clearing the credentials leaves the expiry at zero, so each run tries again.
      *
      * @return whether a refresh was armed
      */
