@@ -306,6 +306,13 @@ public class NocturneOAuthService {
 
             final OAuthTokenResponse response = api.oAuthToken(
                     "refresh_token", null, null, clientId, null, refreshToken, null, null);
+            // The SDK treats access_token as optional, and storing a missing or empty one would wipe
+            // the token already held. Keep that one instead and report the refresh as failed.
+            final String newAccessToken = response.getAccessToken();
+            if (newAccessToken == null || newAccessToken.isEmpty()) {
+                UserError.Log.e(TAG, "refreshAccessToken: response has no access_token");
+                return false;
+            }
             storeTokens(response);
             UserError.Log.d(TAG, "refreshAccessToken: success");
             return true;

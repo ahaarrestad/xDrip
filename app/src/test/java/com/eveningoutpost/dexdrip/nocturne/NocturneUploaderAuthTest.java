@@ -117,11 +117,16 @@ public class NocturneUploaderAuthTest extends RobolectricTestWithConfig {
 
     /** A refresh grant the server accepts: a new access token, valid for an hour. */
     private static MockResponse refreshedTokenResponse() {
+        return tokenResponse("{\"access_token\":\"" + REFRESHED_TOKEN
+                + "\",\"token_type\":\"Bearer\",\"expires_in\":3600}");
+    }
+
+    /** A 200 from the token endpoint carrying the given body. */
+    private static MockResponse tokenResponse(final String body) {
         return new MockResponse()
                 .setResponseCode(200)
                 .setHeader("Content-Type", "application/json")
-                .setBody("{\"access_token\":\"" + REFRESHED_TOKEN
-                        + "\",\"token_type\":\"Bearer\",\"expires_in\":3600}");
+                .setBody(body);
     }
 
     /** Drives one treatment deletion; the uuid is tried against every resource that may hold it. */
@@ -364,5 +369,54 @@ public class NocturneUploaderAuthTest extends RobolectricTestWithConfig {
         // :: Verify
         assertThat(nextRequest().getPath()).isEqualTo(TOKEN_PATH);
         assertThat(nextRequest().getHeader("Authorization")).isEqualTo("Bearer " + REFRESHED_TOKEN);
+    }
+
+    // ===== A refresh that returns no access token ================================================
+
+    /**
+     * A refresh answered without an access token leaves the stored token in place, and the upload
+     * goes out with it rather than with an empty bearer header.
+     * <p>
+     * {@code OAuthTokenResponse} declares no required fields, so such a body deserialises cleanly.
+     * Before the fix it was stored as it came: the missing token removed the stored one, and the
+     * upload went out as {@code "Bearer "}.
+     */
+    @Test
+    public void upload_whenTheRefreshReturnsNoAccessToken_usesTheStoredToken() throws Exception {
+        // :: Setup
+        seedClientId();
+        PersistentStore.setLong(TOKEN_EXPIRY_KEY, 0); // due for a refresh before the upload
+        server.enqueue(tokenResponse("{\"token_type\":\"Bearer\",\"expires_in\":3600}"));
+        server.enqueue(jsonResponse());
+
+        // :: Act
+        final boolean uploaded = uploadOneReading();
+
+        // :: Verify
+        final RecordedRequest refresh = nextRequest();
+        assertThat(refresh.getPath()).isEqualTo(TOKEN_PATH);
+        assertThat(refresh.getBody().readUtf8()).contains("grant_type=refresh_token");
+        assertThat(nextRequest().getHeader("Authorization")).isEqualTo("Bearer " + ACCESS_TOKEN);
+        assertThat(uploaded).isTrue();
+    }
+
+    /** An access token that is present but empty is treated the same as a missing one. */
+    @Test
+    public void upload_whenTheRefreshReturnsAnEmptyAccessToken_usesTheStoredToken()
+            throws Exception {
+        // :: Setup
+        seedClientId();
+        PersistentStore.setLong(TOKEN_EXPIRY_KEY, 0); // due for a refresh before the upload
+        server.enqueue(tokenResponse(
+                "{\"access_token\":\"\",\"token_type\":\"Bearer\",\"expires_in\":3600}"));
+        server.enqueue(jsonResponse());
+
+        // :: Act
+        final boolean uploaded = uploadOneReading();
+
+        // :: Verify
+        assertThat(nextRequest().getPath()).isEqualTo(TOKEN_PATH);
+        assertThat(nextRequest().getHeader("Authorization")).isEqualTo("Bearer " + ACCESS_TOKEN);
+        assertThat(uploaded).isTrue();
     }
 }
