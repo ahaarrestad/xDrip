@@ -24,27 +24,21 @@ import java.util.regex.Pattern;
  * local, the class body for a field. Text built in another method and returned from it, or passed
  * to a helper that logs its argument, is not traced. Nor are {@code getQuantityString} and
  * {@code getStringArray}; nothing in the tree logs either today.
- * <p>
- * The Event Log ({@code ueh}, {@code uel}) is the one exception. The user reads it too, so it may
- * log {@code xdrip.gsWithEnglish(R.string.…)}, which gives the translated text with the English
- * after it. Any other log call that logs that text is still a hit, and so is an Event Log call
- * that logs a plain resource read beside it.
  *
  * @author Asbjørn Aarrestad - 2026.10
  */
 final class TranslatedLogScanner {
 
-    /** Every log method xDrip routes to logcat or the Event Log, under any qualifier. */
+    /**
+     * Every log method xDrip routes to logcat or the Event Log, under any qualifier, except the user
+     * events {@code ueh} and {@code uel}: those are written for the user to read, so they stay translated.
+     */
     private static final Pattern LOG_CALL =
-            Pattern.compile("\\bLog\\s*\\.\\s*(e|d|i|w|v|wtf|ueh|uel)\\s*\\(");
+            Pattern.compile("\\bLog\\s*\\.\\s*(e|d|i|w|v|wtf)\\s*\\(");
 
     /** A read of a string resource, which returns the text in the user's language. Group 1 is its name. */
     private static final Pattern TRANSLATED =
             Pattern.compile("\\b(?:gs|getString|getText)\\s*\\(\\s*R\\s*\\.\\s*string\\s*\\.\\s*(\\w+)");
-
-    /** A read of a string resource that gives the English after the translated text. Group 1 is its name. */
-    private static final Pattern WITH_ENGLISH =
-            Pattern.compile("\\bgsWithEnglish\\s*\\(\\s*R\\s*\\.\\s*string\\s*\\.\\s*(\\w+)");
 
     /** A declaration whose value may be logged later. The optional part is a Kotlin type. */
     private static final Pattern DECLARATION =
@@ -82,7 +76,7 @@ final class TranslatedLogScanner {
             return line;
         }
 
-        /** The log method called: {@code e}, {@code ueh} and so on. */
+        /** The log method called: {@code e}, {@code w} and so on. */
         String method() {
             return method;
         }
@@ -114,11 +108,6 @@ final class TranslatedLogScanner {
         private final int argumentsEnd;
         private final String method;
 
-        /** Whether this call writes to the Event Log, where the English may follow translated text. */
-        private boolean eventLog() {
-            return method.equals("ueh") || method.equals("uel");
-        }
-
         private Call(final int start, final int argumentsStart, final int argumentsEnd, final String method) {
             this.start = start;
             this.argumentsStart = argumentsStart;
@@ -145,9 +134,7 @@ final class TranslatedLogScanner {
         final List<Call> calls = logCalls(code);
         final Map<Integer, Finding> findings = new TreeMap<>();
         for (final Call call : calls) {
-            final String arguments = code.substring(call.argumentsStart, call.argumentsEnd);
-            if (reads(TRANSLATED, arguments, untranslatable)
-                    || !call.eventLog() && reads(WITH_ENGLISH, arguments, untranslatable)) {
+            if (readsTranslatedText(code.substring(call.argumentsStart, call.argumentsEnd), untranslatable)) {
                 findings.put(call.start, finding(path, source, code, call, ""));
             }
         }
@@ -184,8 +171,7 @@ final class TranslatedLogScanner {
 
     /**
      * Reports every log call that logs {@code name} after the value starting at {@code valueStart},
-     * if that value reads a string resource; an Event Log call is not reported when every read in
-     * the value gives the English too. The scope is the block of the variable's declaration,
+     * if that value reads a string resource. The scope is the block of the variable's declaration,
      * so that text put in it inside an {@code if} is still followed to a log call after the
      * {@code if}; without a declaration in sight it is the block of the assignment.
      */
@@ -194,9 +180,7 @@ final class TranslatedLogScanner {
                                       final Set<String> untranslatable, final String name,
                                       final int valueStart, final boolean kotlin) {
         final int valueEnd = endOfValue(code, valueStart, kotlin);
-        final String value = code.substring(valueStart, valueEnd);
-        final boolean translated = reads(TRANSLATED, value, untranslatable);
-        if (!translated && !reads(WITH_ENGLISH, value, untranslatable)) {
+        if (!readsTranslatedText(code.substring(valueStart, valueEnd), untranslatable)) {
             return;
         }
         final int declared = lastDeclaration(code, name, valueStart);
@@ -207,18 +191,18 @@ final class TranslatedLogScanner {
         final String through = name + " set from a string resource on line " + lineOf(code, valueStart);
         final Pattern use = Pattern.compile("\\b" + Pattern.quote(name) + "\\b");
         for (final Call call : calls) {
-            if (call.start >= valueEnd && call.start < scopeEnd && (translated || !call.eventLog())
+            if (call.start >= valueEnd && call.start < scopeEnd
                     && use.matcher(code.substring(call.argumentsStart, call.argumentsEnd)).find()) {
                 findings.putIfAbsent(call.start, finding(path, source, code, call, through));
             }
         }
     }
 
-    /** Whether {@code code} has a {@code read} of a string resource that is not one of {@code untranslatable}. */
-    private static boolean reads(final Pattern read, final String code, final Set<String> untranslatable) {
-        final Matcher found = read.matcher(code);
-        while (found.find()) {
-            if (!untranslatable.contains(found.group(1))) {
+    /** Whether {@code code} reads a string resource that is not one of {@code untranslatable}. */
+    private static boolean readsTranslatedText(final String code, final Set<String> untranslatable) {
+        final Matcher read = TRANSLATED.matcher(code);
+        while (read.find()) {
+            if (!untranslatable.contains(read.group(1))) {
                 return true;
             }
         }

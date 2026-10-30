@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Covers what {@link Preferences#applyPrefSettingRange} tells the support group and the user when it
- * pulls an out-of-range glucose setting back into range.
+ * Covers what {@link Preferences#applyPrefSettingRange} tells the user when it pulls an
+ * out-of-range glucose setting back into range.
  * <p>
- * The Event Log line is read by the user and by whoever helps them, so it is the translated text
- * with the English after it; the notification is for the user alone, so it stays translated.
- * {@link TranslationMarkingContext} marks the strings read through it, which is how a test under
- * the English-only {@code fast} flavor tells the two apart.
+ * Both the Event Log line, a user event, and the notification are written for the user to read, so
+ * both stay in the phone's language. {@link TranslationMarkingContext} marks the strings read
+ * through it, which is how a test under the English-only {@code fast} flavor sees that they came
+ * from a resource.
  *
  * @author Asbjørn Aarrestad - 2026.10
  */
@@ -56,9 +56,9 @@ public class PreferencesSettingRangeTest extends RobolectricTestWithConfig {
         xdrip.setContextAlways(RuntimeEnvironment.application);
     }
 
-    /** A value above the maximum is set to the maximum, and the Event Log says so translated and in English. */
+    /** A value above the maximum is set to the maximum, and the Event Log says so in the user's language. */
     @Test
-    public void aValueAboveTheMaximumIsLoggedTranslatedAndInEnglish() {
+    public void aValueAboveTheMaximumIsLoggedTranslated() {
         // :: Setup
         Pref.setString(KEY, "500");
 
@@ -67,16 +67,15 @@ public class PreferencesSettingRangeTest extends RobolectricTestWithConfig {
 
         // :: Verify
         assertWithMessage("setting after the correction").that(Pref.getString(KEY, "")).isEqualTo("400.0");
-        final String english = KEY
-                + " was set to a value greater than maximum allowed. It has been changed to maximum.";
         assertWithMessage("what Preferences logged")
                 .that(messages())
-                .contains(TranslationMarkingContext.mark(english) + " (" + english + ")");
+                .contains(TranslationMarkingContext.mark(
+                        RuntimeEnvironment.application.getString(R.string.pref_was_greater_than_max, KEY)));
     }
 
-    /** A value below the minimum is set to the minimum, and the Event Log says so translated and in English. */
+    /** A value below the minimum is set to the minimum, and the Event Log says so in the user's language. */
     @Test
-    public void aValueBelowTheMinimumIsLoggedTranslatedAndInEnglish() {
+    public void aValueBelowTheMinimumIsLoggedTranslated() {
         // :: Setup
         Pref.setString(KEY, "10");
 
@@ -85,11 +84,10 @@ public class PreferencesSettingRangeTest extends RobolectricTestWithConfig {
 
         // :: Verify
         assertWithMessage("setting after the correction").that(Pref.getString(KEY, "")).isEqualTo("40.0");
-        final String english = KEY
-                + " was set to a value less than minimum allowed. It has been changed to minimum.";
         assertWithMessage("what Preferences logged")
                 .that(messages())
-                .contains(TranslationMarkingContext.mark(english) + " (" + english + ")");
+                .contains(TranslationMarkingContext.mark(
+                        RuntimeEnvironment.application.getString(R.string.pref_was_less_than_min, KEY)));
     }
 
     /** The user is still told in their own language: the notification text comes from a resource. */
@@ -108,7 +106,8 @@ public class PreferencesSettingRangeTest extends RobolectricTestWithConfig {
         assertWithMessage("notification for the corrected setting").that(notification).isNotNull();
         assertWithMessage("notification text")
                 .that(String.valueOf(notification.extras.getCharSequence(Notification.EXTRA_TEXT)))
-                .isEqualTo(TranslationMarkingContext.mark(RuntimeEnvironment.application.getString(R.string.setting_pref_to_max)));
+                .isEqualTo(TranslationMarkingContext.mark(
+                        RuntimeEnvironment.application.getString(R.string.setting_pref_to_max)));
     }
 
     private static List<String> messages() {

@@ -77,14 +77,14 @@ public class TranslatedLogScannerTest {
                 .inOrder();
     }
 
-    /** The Event Log methods and the platform logger are log calls like any other. */
+    /** The platform logger and every level of xDrip's own are log calls like any other. */
     @Test
     public void everyLogMethodIsCovered() {
         // :: Setup
         final String source = source(
                 "void f() {",
-                "    UserError.Log.ueh(TAG, xdrip.gs(R.string.a));",
-                "    UserError.Log.uel(TAG, xdrip.gs(R.string.a));",
+                "    UserError.Log.e(TAG, xdrip.gs(R.string.a));",
+                "    UserError.Log.i(TAG, xdrip.gs(R.string.a));",
                 "    android.util.Log.w(TAG, xdrip.gs(R.string.a));",
                 "    Log.v(TAG, xdrip.gs(R.string.a));",
                 "    Log.wtf(TAG, xdrip.gs(R.string.a));",
@@ -95,9 +95,26 @@ public class TranslatedLogScannerTest {
 
         // :: Verify
         assertWithMessage("findings").that(lines(findings))
-                .containsExactly("A.java:2  Log.ueh", "A.java:3  Log.uel", "A.java:4  Log.w",
+                .containsExactly("A.java:2  Log.e", "A.java:3  Log.i", "A.java:4  Log.w",
                         "A.java:5  Log.v", "A.java:6  Log.wtf")
                 .inOrder();
+    }
+
+    /** User events are written for the user to read in the Event Log, so translated text is right there. */
+    @Test
+    public void userEventsAreNotChecked() {
+        // :: Setup
+        final String source = source(
+                "void f() {",
+                "    UserError.Log.ueh(TAG, xdrip.gs(R.string.a));",
+                "    UserError.Log.uel(TAG, xdrip.gs(R.string.a));",
+                "}");
+
+        // :: Act
+        final List<TranslatedLogScanner.Finding> findings = TranslatedLogScanner.scan("A.java", source);
+
+        // :: Verify
+        assertWithMessage("findings").that(lines(findings)).isEmpty();
     }
 
     /** What the failure message shows: the call as written, on one line. */
@@ -119,82 +136,6 @@ public class TranslatedLogScannerTest {
                 .isEqualTo("Log.e(TAG, xdrip.gs(R.string.a))");
         assertWithMessage("report line").that(findings.get(0).toString())
                 .isEqualTo("A.java:2  Log.e  Log.e(TAG, xdrip.gs(R.string.a))");
-    }
-
-    // =================================================== Event Log ===================================================
-
-    /** The Event Log is read by the user too, so it may log the translated text with the English after it. */
-    @Test
-    public void translatedTextWithItsEnglishIsAllowedInTheEventLog() {
-        // :: Setup
-        final String source = source(
-                "void f() {",
-                "    UserError.Log.ueh(TAG, xdrip.gsWithEnglish(R.string.a, x));",
-                "    UserError.Log.uel(TAG, xdrip.gsWithEnglish(R.string.b));",
-                "}");
-
-        // :: Act
-        final List<TranslatedLogScanner.Finding> findings = TranslatedLogScanner.scan("A.java", source);
-
-        // :: Verify
-        assertWithMessage("findings").that(lines(findings)).isEmpty();
-    }
-
-    /** Every other log is for the support group alone, so the translated half is not allowed there. */
-    @Test
-    public void translatedTextWithItsEnglishIsFoundOutsideTheEventLog() {
-        // :: Setup
-        final String source = source(
-                "void f() {",
-                "    Log.d(TAG, xdrip.gsWithEnglish(R.string.a));",
-                "    UserError.Log.e(TAG, xdrip.gsWithEnglish(R.string.b));",
-                "}");
-
-        // :: Act
-        final List<TranslatedLogScanner.Finding> findings = TranslatedLogScanner.scan("A.java", source);
-
-        // :: Verify
-        assertWithMessage("findings").that(lines(findings))
-                .containsExactly("A.java:2  Log.d", "A.java:3  Log.e")
-                .inOrder();
-    }
-
-    /** The same holds through a variable: the Event Log may log it, another log may not. */
-    @Test
-    public void aVariableWithItsEnglishIsFoundOnlyOutsideTheEventLog() {
-        // :: Setup
-        final String source = source(
-                "void f() {",
-                "    final String text = xdrip.gsWithEnglish(R.string.a);",
-                "    UserError.Log.uel(TAG, text);",
-                "    Log.i(TAG, text);",
-                "}");
-
-        // :: Act
-        final List<TranslatedLogScanner.Finding> findings = TranslatedLogScanner.scan("A.java", source);
-
-        // :: Verify
-        assertWithMessage("findings").that(lines(findings)).containsExactly("A.java:4  Log.i");
-    }
-
-    /** The English must cover all of the translated text: a plain read beside it is still found. */
-    @Test
-    public void aPlainReadBesideTheEnglishIsStillFoundInTheEventLog() {
-        // :: Setup
-        final String source = source(
-                "void f() {",
-                "    UserError.Log.ueh(TAG, xdrip.gsWithEnglish(R.string.a) + xdrip.gs(R.string.b));",
-                "    final String text = xdrip.gsWithEnglish(R.string.a) + xdrip.gs(R.string.b);",
-                "    UserError.Log.uel(TAG, text);",
-                "}");
-
-        // :: Act
-        final List<TranslatedLogScanner.Finding> findings = TranslatedLogScanner.scan("A.java", source);
-
-        // :: Verify
-        assertWithMessage("findings").that(lines(findings))
-                .containsExactly("A.java:2  Log.ueh", "A.java:4  Log.uel")
-                .inOrder();
     }
 
     // ============================================== Through a variable ===============================================

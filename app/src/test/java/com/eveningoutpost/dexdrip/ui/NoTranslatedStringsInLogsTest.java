@@ -21,15 +21,13 @@ import java.util.stream.Stream;
 /**
  * Checks that no xDrip log call logs text read from a translatable string resource.
  * <p>
- * Logs are read by the people who help users, not by the users themselves: the Event Log in a
- * screenshot, a logcat attached to an issue. A line in Bulgarian or Japanese is a line the support
- * group cannot read or search for. So what is logged stays English, and what the user sees - a
- * toast, a notification, a status line - stays translated. Where both are wanted, the log call
- * gets the English text written out and the resource stays for the user.
- * <p>
- * The Event Log ({@code ueh}, {@code uel}) is read by both: the user, who is helped by it directly,
- * and the support group. A line there may be translated as long as the English follows it, which
- * is what {@code xdrip.gsWithEnglish} gives.
+ * Most logs are read by the people who help users, not by the users themselves: an error in a
+ * screenshot of the Event Log, a logcat attached to an issue. A line in Bulgarian or Japanese is a
+ * line the support group cannot read or search for. So what is logged stays English, and what the
+ * user sees - a toast, a notification, a status line - stays translated. Where both are wanted, the
+ * log call gets the English text written out and the resource stays for the user. User events
+ * ({@code UserError.Log.ueh} and {@code uel}) are the exception: they are written for the user to
+ * read in the Event Log, so they stay translated and are not checked.
  * <p>
  * <b>Why this reads the source tree.</b> Under the {@code fast} flavor the unit tests only have
  * English resources (see {@link TranslationPlaceholderTest}), so a log line looks right in every
@@ -38,12 +36,11 @@ import java.util.stream.Stream;
  * What counts as a hit is {@link TranslatedLogScanner}, and its limits are this test's limits: it
  * follows a variable to the end of the block that declares it, but not text returned from another
  * method or handed to a helper that logs its argument. Today that lets translated text through
- * {@code Home.toaststaticnext} (to the Event Log, from {@code Home}, {@code NSClientReceiver} and
- * {@code AidexReceiver}), {@code Home.toast}, {@code ShareFollowDownload.msg},
- * {@code MedtrumCollectionService.status} and {@code Reminders.setFloaterText}. Nor does it see
- * inside a Kotlin string template ({@code "${getString(...)}"}) or a {@code StringBuilder}. A
- * string declared {@code translatable="false"} in {@code values} is not counted. Only {@code app}
- * is read; {@code wear} has no translations.
+ * {@code Home.toast}, {@code ShareFollowDownload.msg}, {@code MedtrumCollectionService.status} and
+ * {@code Reminders.setFloaterText}. Nor does it see inside a Kotlin string template
+ * ({@code "${getString(...)}"}) or a {@code StringBuilder}. A string declared
+ * {@code translatable="false"} in {@code values} is not counted. Only {@code app} is read;
+ * {@code wear} has no translations.
  *
  * @author Asbjørn Aarrestad - 2026.10
  */
@@ -73,7 +70,7 @@ public class NoTranslatedStringsInLogsTest {
 
     private static final Pattern NAME = Pattern.compile("\\bname\\s*=\\s*\"(\\w+)\"");
 
-    /** Nothing in {@code app} may log translated text, unless to the Event Log with the English after it. */
+    /** Nothing in {@code app} may log translated text. */
     @Test
     public void noLogCallLogsTranslatedText() {
         // :: Act
@@ -82,9 +79,7 @@ public class NoTranslatedStringsInLogsTest {
         // :: Verify
         assertWithMessage("log calls that log translated text. Logs are read by the support group"
                 + " and must stay English: write the English text in the log call, and keep the"
-                + " translated string for what the user sees. In the Event Log (ueh, uel), use"
-                + " xdrip.gsWithEnglish to log the translated text with the English after it.\n%s",
-                report(sweep.findings))
+                + " translated string for what the user sees.\n%s", report(sweep.findings))
                 .that(sweep.findings)
                 .isEmpty();
     }
